@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#17191c">
+<meta name="description" content="Offline multiplayer games for road trips, parties, and conversations.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Unplugged Together</title>
+<style>
+  :root{
+    --night:#17191c;--night-hi:#24272b;--paper:#f3ecdc;--ink:#25211c;
+    --muted:#9b978e;--line:#404349;--brass:#ddb552;--teal:#68bbb6;
+    --coral:#dd705e;--green:#7ea97a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{min-height:100%;background:var(--night)}
+  body{min-height:100vh;background:radial-gradient(100% 58% at 50% 0%,var(--night-hi),var(--night) 72%);color:var(--paper);font-family:ui-sans-serif,"Helvetica Neue",Arial,sans-serif}
+  a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer}
+  button:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+  [hidden]{display:none!important}
+  .shell{width:min(1180px,100%);margin:0 auto;padding:22px 22px 34px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:18px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:13px;min-width:0}
+  .brand img{width:48px;height:48px;border-radius:8px}
+  .brand h1{font-family:Georgia,"Times New Roman",serif;font-size:27px;line-height:1;letter-spacing:0}
+  .brand p{margin-top:5px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.17em;text-transform:uppercase}
+  .headerActions{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+  .status{display:inline-flex;align-items:center;gap:7px;color:#b7b1a5;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+  .status:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--brass);box-shadow:0 0 0 3px rgba(221,181,82,.12)}
+  .status.ready:before{background:var(--green);box-shadow:0 0 0 3px rgba(126,169,122,.12)}
+  .btn{border:0;border-radius:999px;padding:11px 17px;background:var(--brass);color:#211b0e;font-size:10px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 0 #8d6d28}
+  .btn:active{transform:translateY(2px);box-shadow:0 2px 0 #8d6d28}.btn svg{width:15px;height:15px}
+  .btn.quiet{background:transparent;color:#b1aca2;border:1px solid #55585e;box-shadow:none}.btn.quiet:active{transform:none}
+  .intro{padding:27px 0 20px;display:flex;align-items:end;justify-content:space-between;gap:24px}
+  .intro h2{max-width:680px;font-family:Georgia,"Times New Roman",serif;font-size:34px;line-height:1.15;letter-spacing:0}
+  .intro p{max-width:420px;color:#aaa59c;font-size:14px;line-height:1.55}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .filter{border:1px solid #51545a;border-radius:999px;background:transparent;color:#a7a39b;padding:8px 12px;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+  .filter[aria-pressed="true"]{border-color:var(--teal);background:rgba(104,187,182,.09);color:#c5e7e4}
+  .gameGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .gameCard{border:1px solid var(--line);border-radius:8px;background:#202327;overflow:hidden;display:grid;grid-template-columns:minmax(210px,44%) 1fr;min-height:225px}
+  .gameCard[hidden]{display:none}
+  .gameCard img{width:100%;height:100%;min-height:225px;object-fit:cover;object-position:center;border-right:1px solid var(--line)}
+  .gameBody{padding:20px;display:flex;flex-direction:column;align-items:flex-start}
+  .gameType{color:var(--teal);font-size:8px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}
+  .gameBody h3{margin-top:8px;font-family:Georgia,"Times New Roman",serif;font-size:23px;line-height:1.1;letter-spacing:0}
+  .gameBody p{margin-top:10px;color:#aaa59c;font-size:13px;line-height:1.45}
+  .meta{margin-top:12px;color:#797b7f;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+  .gameBody .btn{margin-top:auto;align-self:flex-end;background:var(--coral);color:#251411;box-shadow:0 4px 0 #913a30}
+  footer{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:26px;padding-top:18px;border-top:1px solid var(--line);color:#76777b;font-size:9px;letter-spacing:.08em;text-transform:uppercase;line-height:1.5}
+  .modal{position:fixed;inset:0;z-index:20;background:rgba(7,8,9,.86);display:flex;align-items:center;justify-content:center;padding:18px}
+  .modalCard{width:min(480px,100%);border:1px solid #575a60;border-radius:8px;background:#25282d;padding:25px;box-shadow:0 30px 70px rgba(0,0,0,.7)}
+  .modalHead{display:flex;align-items:center;justify-content:space-between;gap:12px}.modalHead h2{font-family:Georgia,"Times New Roman",serif;font-size:24px;letter-spacing:0}
+  .installSteps{margin-top:18px;padding-left:20px;display:grid;gap:11px;color:#c4beb2;font-size:14px;line-height:1.5}
+  .installNote{margin-top:16px;color:#8f8d87;font-size:12px;line-height:1.45}
+  @media(max-width:900px){.gameGrid{grid-template-columns:1fr}.intro{align-items:flex-start;flex-direction:column}.intro p{max-width:680px}}
+  @media(max-width:620px){
+    .shell{padding:14px 13px 24px}.brand img{width:42px;height:42px}.brand h1{font-size:20px}.brand p{display:none}.status{display:none}
+    .headerActions .btn{padding:10px 13px}.headerActions .btn span{display:none}.intro{padding:22px 0 17px}.intro h2{font-size:27px}.intro p{font-size:13px}
+    .gameCard{grid-template-columns:1fr}.gameCard img{height:auto;min-height:0;aspect-ratio:16/10;border-right:0;border-bottom:1px solid var(--line)}.gameBody{min-height:205px}
+    footer{align-items:flex-start;flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <a class="brand" href="./" aria-label="Unplugged Together home">
+      <img src="icons/icon.svg" alt="">
+      <span><h1>Unplugged Together</h1><p>Games for people in the same place</p></span>
+    </a>
+    <div class="headerActions">
+      <span id="offlineStatus" class="status">Preparing offline</span>
+      <button id="installBtn" class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg><span>Install</span></button>
+    </div>
+  </header>
+
+  <section class="intro">
+    <h2>Put the phone down between turns. Pick each other up instead.</h2>
+    <p>Choose a game, hand one phone around, and play together. Once this page is installed or visited online, the whole collection is available without a connection.</p>
+  </section>
+
+  <nav class="filters" aria-label="Filter games">
+    <button class="filter" data-filter="all" aria-pressed="true">All games</button>
+    <button class="filter" data-filter="road" aria-pressed="false">Road trip</button>
+    <button class="filter" data-filter="party" aria-pressed="false">Party</button>
+    <button class="filter" data-filter="conversation" aria-pressed="false">Conversation</button>
+    <button class="filter" data-filter="words" aria-pressed="false">Words</button>
+  </nav>
+
+  <main class="gameGrid">
+    <article class="gameCard" data-tags="party words">
+      <img src="screenshots/word-shaker.jpg" alt="Word Shaker letter grid during play">
+      <div class="gameBody"><span class="gameType">Word game</span><h3>Word Shaker</h3><p>Shake sixteen letter dice, find connected words, and score the answers nobody else found.</p><span class="meta">2-8 players · 3 minutes</span><a class="btn" href="word-shaker/word-shaker.html">Play <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg></a></div>
+    </article>
+    <article class="gameCard" data-tags="party">
+      <img src="screenshots/imposter.jpg" alt="Imposter secret card handoff screen">
+      <div class="gameBody"><span class="gameType">Social deduction</span><h3>Imposter</h3><p>Everyone knows the secret place except one player. Ask careful questions and identify who is bluffing.</p><span class="meta">4-8 players · 3-10 minutes</span><a class="btn" href="imposter/imposter.html">Play <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg></a></div>
+    </article>
+    <article class="gameCard" data-tags="party words">
+      <img src="screenshots/categories.jpg" alt="Categories round with a letter and twelve prompts">
+      <div class="gameBody"><span class="gameType">Creative thinking</span><h3>Categories</h3><p>Race to write answers beginning with one letter, then cross out anything another player matched.</p><span class="meta">2-10 players · Paper recommended</span><a class="btn" href="categories/categories.html">Play <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg></a></div>
+    </article>
+    <article class="gameCard" data-tags="party conversation">
+      <img src="screenshots/same-page.jpg" alt="Same Page fill-in prompt during a timed round">
+      <div class="gameBody"><span class="gameType">Matching minds</span><h3>Same Page</h3><p>Complete the prompt with the answer you think the room will write. Matching minds score together.</p><span class="meta">3-10 players · 700+ prompts</span><a class="btn" href="same-page/same-page.html">Play <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg></a></div>
+    </article>
+    <article class="gameCard" data-tags="road conversation">
+      <img src="screenshots/greenlight.jpg" alt="Greenlight movie pitch with actors, genre, and studio note">
+      <div class="gameBody"><span class="gameType">Co-op road trip</span><h3>Greenlight</h3><p>Invent a movie around two stars and a strange genre, then survive the studio note that changes everything.</p><span class="meta">2+ players · Driver plays by voice</span><a class="btn" href="greenlight/greenlight.html">Play <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg></a></div>
+    </article>
+    <article class="gameCard" data-tags="road conversation party">
+      <img src="screenshots/petty-court.jpg" alt="Petty Court debate with driver and passenger positions">
+      <div class="gameBody"><span class="gameType">Trivial debate</span><h3>Petty Court</h3><p>Argue an aggressively trivial hot take, then swap sides when the Gavel drops.</p><span class="meta">2+ players · 1,184 cases</span><a class="btn" href="petty-court/petty-court.html">Play <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg></a></div>
+    </article>
+    <article class="gameCard" data-tags="road conversation">
+      <img src="screenshots/talk-amongst-yourselves.jpg" alt="Talk Amongst Yourselves question card with a deeper follow-up">
+      <div class="gameBody"><span class="gameType">Open conversation</span><h3>Talk Amongst Yourselves</h3><p>Skip the small talk with funny, revealing, nostalgic, and mildly existential questions.</p><span class="meta">2+ players · 1,184 questions</span><a class="btn" href="talk-amongst-yourselves/talk-amongst-yourselves.html">Play <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg></a></div>
+    </article>
+  </main>
+
+  <footer><span>No accounts · no tracking · no ads · no analytics</span><span>Made for gathering, not scrolling</span></footer>
+</div>
+
+<div id="installModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="installTitle" hidden>
+  <div class="modalCard">
+    <div class="modalHead"><h2 id="installTitle">Keep it on your phone</h2><button id="closeInstall" class="btn quiet">Close</button></div>
+    <ol class="installSteps" id="installSteps">
+      <li>Open this page in your phone's main browser.</li>
+      <li>Open the browser menu or Share menu.</li>
+      <li>Choose <strong>Add to Home Screen</strong> or <strong>Install App</strong>.</li>
+    </ol>
+    <p class="installNote">Visit once while online so every game can be cached. Browser storage controls can remove offline files later.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+let installPrompt=null;
+
+document.querySelector(".filters").addEventListener("click",event=>{
+  const button=event.target.closest(".filter");if(!button)return;
+  const filter=button.dataset.filter;
+  document.querySelectorAll(".filter").forEach(item=>item.setAttribute("aria-pressed",String(item===button)));
+  document.querySelectorAll(".gameCard").forEach(card=>{card.hidden=filter!=="all"&&!card.dataset.tags.split(" ").includes(filter);});
+});
+
+function updateNetworkStatus(ready){
+  const status=$("offlineStatus");
+  if(!navigator.onLine){status.textContent="Playing offline";status.classList.add("ready");return;}
+  status.textContent=ready?"Ready offline":"Preparing offline";status.classList.toggle("ready",ready);
+}
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("./sw.js").then(()=>navigator.serviceWorker.ready).then(()=>updateNetworkStatus(true)).catch(()=>updateNetworkStatus(false));
+  });
+}else{updateNetworkStatus(false);}
+window.addEventListener("online",()=>updateNetworkStatus(Boolean(navigator.serviceWorker&&navigator.serviceWorker.controller)));
+window.addEventListener("offline",()=>updateNetworkStatus(true));
+
+window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();installPrompt=event;});
+window.addEventListener("appinstalled",()=>{$("installBtn").hidden=true;installPrompt=null;});
+$("installBtn").addEventListener("click",async()=>{
+  if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;return;}
+  $("installModal").hidden=false;$("closeInstall").focus();
+});
+$("closeInstall").addEventListener("click",()=>{$("installModal").hidden=true;$("installBtn").focus();});
+$("installModal").addEventListener("click",event=>{if(event.target===$("installModal")){$("installModal").hidden=true;$("installBtn").focus();}});
+document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!$("installModal").hidden){$("installModal").hidden=true;$("installBtn").focus();}});
+if(window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone==true)$("installBtn").hidden=true;
+updateNetworkStatus(false);
+})();
+</script>
+</body>
+</html>

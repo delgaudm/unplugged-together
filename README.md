@@ -1,88 +1,75 @@
 # Unplugged Together
 
-Offline multiplayer games for face-to-face fun.
+Offline multiplayer games for face-to-face fun. No accounts, ads, tracking, or analytics.
 
-No internet. No accounts. No tracking. Just games you play with people who are actually in the room.
+## Play
 
-## The Idea
+**[Open the game launcher](https://delgaudm.github.io/unplugged-together/)**
 
-Put the phone or tablet in the middle of the table. Everyone plays together.
+[![Unplugged Together launcher](screenshots/launcher.jpg)](https://delgaudm.github.io/unplugged-together/)
 
-These aren't apps you disappear into — they're tools that enable real-world connection. Save any game to your home screen and it works anywhere: road trips, airplane mode, family game night, camping, whenever you want to play with people who are *actually there*.
+Choose a game and start playing. On a phone, use **Install App** or **Add to Home Screen** from the browser menu. Visit the launcher once while online and all seven games are cached for later use without a connection.
+
+The games are ordinary web pages, so there is nothing to buy and no app-store account is required. Clearing browser storage can remove the offline copy; reconnecting and opening the launcher restores it.
 
 ## Games
 
-### [Word Shaker](word-shaker/word-shaker.html)
+<table>
+  <tr>
+    <td width="50%">
+      <h3><a href="word-shaker/word-shaker.html">Word Shaker</a></h3>
+      <a href="word-shaker/word-shaker.html"><img src="screenshots/word-shaker.jpg" alt="Word Shaker gameplay" width="520"></a>
+      <p>Shake sixteen letter dice, find connected words, and score what nobody else found. Best for 2-8 players.</p>
+    </td>
+    <td width="50%">
+      <h3><a href="imposter/imposter.html">Imposter</a></h3>
+      <a href="imposter/imposter.html"><img src="screenshots/imposter.jpg" alt="Imposter gameplay" width="520"></a>
+      <p>One secret place and one player who has no idea where they are. Best for 4-8 players.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3><a href="categories/categories.html">Categories</a></h3>
+      <a href="categories/categories.html"><img src="screenshots/categories.jpg" alt="Categories gameplay" width="520"></a>
+      <p>One letter, a list of categories, and a race to write unique answers. Best for 2-10 players.</p>
+    </td>
+    <td width="50%">
+      <h3><a href="same-page/same-page.html">Same Page</a></h3>
+      <a href="same-page/same-page.html"><img src="screenshots/same-page.jpg" alt="Same Page gameplay" width="520"></a>
+      <p>Complete the prompt with the answer you think the room will write. Includes 700+ prompts.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3><a href="greenlight/greenlight.html">Greenlight</a></h3>
+      <a href="greenlight/greenlight.html"><img src="screenshots/greenlight.jpg" alt="Greenlight gameplay" width="520"></a>
+      <p>A co-op road-trip movie pitch ruined, helpfully, by a studio note. The driver plays entirely by voice.</p>
+    </td>
+    <td width="50%">
+      <h3><a href="petty-court/petty-court.html">Petty Court</a></h3>
+      <a href="petty-court/petty-court.html"><img src="screenshots/petty-court.jpg" alt="Petty Court gameplay" width="520"></a>
+      <p>Debate 1,184 aggressively trivial cases and swap sides when the Gavel drops.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3><a href="talk-amongst-yourselves/talk-amongst-yourselves.html">Talk Amongst Yourselves</a></h3>
+      <a href="talk-amongst-yourselves/talk-amongst-yourselves.html"><img src="screenshots/talk-amongst-yourselves.jpg" alt="Talk Amongst Yourselves gameplay" width="520"></a>
+      <p>Skip the small talk with 1,184 funny, revealing, nostalgic, and mildly existential questions.</p>
+    </td>
+    <td width="50%">
+      <h3>Private by design</h3>
+      <p>Every game runs entirely on the device. Saved cards and Case Law remain in that browser. Nothing is sent to a server.</p>
+    </td>
+  </tr>
+</table>
 
-A word dice game. Shake the 16 dice, find words formed from adjacent letters, and score what's unique to you.
+## How Offline Play Works
 
-- 3-minute rounds
-- 4×4 grid of dice with 3D physics shake
-- Play with paper and pencil
-- Best for 2–8 players
+The launcher registers a service worker that downloads the launcher, every game, the screenshots, and the app icons into the browser cache. After that first successful visit, the same URL works in airplane mode. When the site changes, reconnect and reopen the launcher to receive the updated cache.
 
-### [Imposter](imposter/imposter.html)
-
-A social deduction game. One person is the imposter and has no idea where everyone else is. Ask questions, spot the fake.
-
-- Configurable players (3–10) and time (3–10 minutes)
-- Pass-and-peek card system
-- Over 100 locations included
-- Best for 4–8 players
-
-### [Categories](categories/categories.html)
-
-A creative thinking game. Get a letter and a list of categories — write an answer for each that starts with that letter before time runs out.
-
-- Configurable time (1–6 minutes) and categories (6–16)
-- 200+ categories in the deck
-- Cross out matching answers, score what's unique
-- Best for 2–10 players
-
-### [Same Page](same-page/same-page.html)
-
-A fill-in-the-prompt party game. Write the answer you think the room will write, then score by matching minds.
-
-- Configurable players (3–10), time (30–90 seconds), and rounds (3–12)
-- Three scoring modes: Same Page, Perfect Pair, and Odd Duck
-- 700+ original prompts included
-- Best for 3–10 players
-
-### [Greenlight](greenlight/greenlight.html)
-
-A co-op road-trip pitch game. The passenger deals two actors, a strange movie genre, and a studio note while the driver brainstorms by voice.
-
-- No winners or scoring — just make the best terrible movie together
-- Configurable brainstorm and final-pitch timers
-- 200+ actors, 150+ genres, and 100 studio notes included
-- Best for 2+ players, especially long drives
-
-### [Petty Court](petty-court/petty-court.html)
-
-A passenger-led road-trip debate game about aggressively trivial matters. Pick a side, argue the opposite, and swap positions when the Gavel drops.
-
-- Three procedures: Turnabout, Opposing Counsel, and Blind Justice
-- 1,000+ offline hot takes across eight themed dockets
-- Save favorite rulings and quotes as local Case Law
-- Best for 2+ players, with the driver playing entirely by voice
-
-### [Talk Amongst Yourselves](talk-amongst-yourselves/talk-amongst-yourselves.html)
-
-A low-key conversation deck for skipping small talk and finding the funny, revealing, and mildly existential corners of somebody's brain.
-
-- 1,000+ offline questions across eight themed dockets
-- Light, Revealing, Deep End, and mixed-depth filters
-- Optional deeper follow-ups and locally saved cards
-- No points, timers, or winners; best for two adults on a long drive
-
-## How to Use
-
-1. **Open** any game's HTML file in a web browser
-2. **Save** it to your home screen or bookmarks
-3. **Play** anytime, anywhere — no connection needed
-
-Everything runs entirely on your device. No accounts, tracking, or analytics. Games that remember settings or favorites store them only in your browser.
+GitHub Pages serves the repository as a static HTTPS website. The individual games remain self-contained HTML files and can also be opened directly from a local copy of the repository.
 
 ---
 
-Made for gathering, not scrolling. Enjoy.
+Made for gathering, not scrolling.
