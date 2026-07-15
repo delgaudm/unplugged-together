@@ -66,6 +66,15 @@ A passenger-led road-trip debate game about aggressively trivial matters. Pick a
 - Save favorite rulings and quotes as local Case Law
 - Best for 2+ players, with the driver playing entirely by voice
 
+### [Talk Amongst Yourselves](talk-amongst-yourselves/talk-amongst-yourselves.html)
+
+A low-key conversation deck for skipping small talk and finding the funny, revealing, and mildly existential corners of somebody's brain.
+
+- 1,000+ offline questions across eight themed dockets
+- Light, Revealing, Deep End, and mixed-depth filters
+- Optional deeper follow-ups and locally saved cards
+- No points, timers, or winners; best for two adults on a long drive
+
 ## How to Use
 
 1. **Open** any game's HTML file in a web browser

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#15171b">
+<title>Talk Amongst Yourselves</title>
+<style>
+  :root{
+    --night:#15171b;--night-hi:#24252a;--cream:#f5edda;--cream-dim:#d9ceb7;
+    --ink:#242019;--aqua:#63c0bb;--coral:#df6c59;--mustard:#dfb64f;
+    --muted:#88847d;--line:#48494e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{min-height:100%;background:var(--night)}
+  body{
+    min-height:100vh;background:radial-gradient(105% 75% at 50% 0%,var(--night-hi),var(--night) 62%,#0b0c0f);
+    color:var(--cream-dim);font-family:ui-sans-serif,"Helvetica Neue",Arial,sans-serif;
+    display:flex;flex-direction:column;align-items:center;gap:18px;padding:18px 18px 24px;
+  }
+  button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.38;cursor:default}
+  button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--aqua);outline-offset:3px}
+  [hidden]{display:none!important}
+
+  .appHeader{width:min(740px,100%);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0;color:var(--cream)}
+  .brandMark{width:42px;height:42px;flex:0 0 auto;border:2px solid var(--aqua);border-radius:50%;display:grid;place-items:center;color:var(--aqua);box-shadow:inset 0 0 0 3px var(--night),inset 0 0 0 4px rgba(99,192,187,.35)}
+  .brandMark svg{width:21px;height:21px}
+  .brandText{min-width:0}
+  .brandText strong{display:block;font-family:Georgia,"Times New Roman",serif;font-size:21px;line-height:1.02;letter-spacing:0;white-space:nowrap}
+  .brandText span{display:block;margin-top:4px;color:#8e8d91;font-size:8px;font-weight:800;letter-spacing:.23em;text-transform:uppercase}
+  .headerTools{display:flex;gap:7px;flex:0 0 auto}
+  .toolButton{min-width:39px;height:39px;border:1px solid #55565c;border-radius:50%;background:transparent;color:#aaa7a0;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:0 10px;font-size:10px;font-weight:800}
+  .toolButton.wide{border-radius:999px}.toolButton svg{width:15px;height:15px}
+
+  main{width:min(740px,100%);display:flex;flex-direction:column;align-items:center;gap:15px;flex:1;justify-content:center}
+  .deckMeta{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#85827c;font-size:9px;font-weight:800;letter-spacing:.17em;text-transform:uppercase}
+  #depthBadge{padding:6px 10px;border:1px solid rgba(223,182,79,.45);border-radius:999px;color:#e8c873}
+  .questionCard{
+    position:relative;width:100%;min-height:370px;border-radius:8px;background:var(--cream);color:var(--ink);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:52px 48px 42px;
+    box-shadow:inset 0 0 0 1px rgba(81,66,39,.2),inset 0 -12px 22px rgba(111,88,47,.14),0 24px 54px rgba(0,0,0,.5);
+    overflow:hidden
+  }
+  .questionCard:before{content:"";position:absolute;left:22px;right:22px;top:20px;border-top:1px solid rgba(64,53,34,.16)}
+  .questionCard:after{content:"";position:absolute;left:22px;right:22px;bottom:20px;border-top:1px solid rgba(64,53,34,.16)}
+  .questionCard.changing{animation:deal .28s ease both}
+  @keyframes deal{0%{opacity:.2;transform:translateY(10px) rotate(.4deg)}100%{opacity:1;transform:none}}
+  #categoryLabel{margin-bottom:22px;color:#a04439;font-size:10px;font-weight:900;letter-spacing:.26em;text-transform:uppercase}
+  #questionText{max-width:640px;font-family:Georgia,"Times New Roman",serif;font-size:34px;line-height:1.25;font-weight:700;letter-spacing:0}
+  #followUp{max-width:570px;margin-top:26px;padding-top:18px;border-top:1px solid rgba(66,52,32,.22);color:#5b5244;font-size:15px;line-height:1.45}
+  #followUp strong{display:block;margin-bottom:7px;color:#a04439;font-size:8px;letter-spacing:.22em;text-transform:uppercase}
+
+  .cardTools{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap}
+  .btn{
+    border:0;border-radius:999px;padding:12px 20px;background:var(--mustard);color:#211c12;
+    font-size:10px;font-weight:900;letter-spacing:.15em;text-transform:uppercase;
+    box-shadow:0 5px 0 #95742b,0 10px 20px rgba(0,0,0,.34);transition:transform .08s ease,box-shadow .08s ease
+  }
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #95742b,0 5px 12px rgba(0,0,0,.34)}
+  .btn.primary{background:var(--aqua);box-shadow:0 5px 0 #377f7c,0 10px 20px rgba(0,0,0,.34)}
+  .btn.secondary{background:var(--coral);color:#211412;box-shadow:0 5px 0 #8e382d,0 10px 20px rgba(0,0,0,.34)}
+  .btn.quiet{background:transparent;color:#aaa69e;border:1px solid #55565c;box-shadow:none;padding:9px 14px;font-size:9px}
+  .btn.quiet:active{transform:none}.btn.quiet[aria-pressed="true"]{border-color:var(--mustard);color:#ebcc7e;background:rgba(223,182,79,.08)}
+  .btn.danger{background:transparent;color:#e68472;border:1px solid rgba(223,108,89,.55);box-shadow:none}
+  .mainAction{min-width:270px;min-height:47px}
+  .ruleLine{min-height:1.3em;color:#77756f;text-align:center;font-size:10px;line-height:1.35;letter-spacing:.06em}
+
+  .modal{position:fixed;inset:0;z-index:20;background:rgba(8,9,11,.86);display:flex;align-items:center;justify-content:center;padding:18px}
+  .modalCard{width:min(620px,100%);max-height:88vh;overflow:auto;border:1px solid #55565c;border-radius:8px;background:#24262b;color:var(--cream-dim);padding:25px;box-shadow:0 30px 70px rgba(0,0,0,.68)}
+  .modalHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+  .modalHead h2{font-family:Georgia,"Times New Roman",serif;color:var(--cream);font-size:24px;letter-spacing:0}
+  .sectionLabel{display:block;margin:18px 0 9px;color:#8e8b84;font-size:9px;font-weight:900;letter-spacing:.22em;text-transform:uppercase}
+  .depthControl{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .segment{min-height:43px;border:1px solid #55565c;border-radius:7px;background:transparent;color:#aaa69d;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+  .segment[aria-pressed="true"]{border-color:var(--mustard);background:rgba(223,182,79,.1);color:#f0d38b}
+  .categoryGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+  .categoryToggle{position:relative}.categoryToggle input{position:absolute;opacity:0;pointer-events:none}
+  .categoryToggle span{min-height:43px;display:grid;place-items:center;border:1px solid #55565c;border-radius:7px;padding:8px;color:#aaa69d;text-align:center;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+  .categoryToggle input:checked+span{border-color:var(--aqua);background:rgba(99,192,187,.1);color:#c2ece9}
+  .categoryToggle input:focus-visible+span{outline:3px solid var(--aqua);outline-offset:3px}
+  .modalActions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:19px}
+  .rulesList{padding-left:20px;display:grid;gap:11px;font-size:14px;line-height:1.5}
+  .privacy{margin-top:16px;color:#99958d;font-size:12px;line-height:1.5}.privacy strong{color:var(--aqua)}
+  #savedSearch{width:100%;border:1px solid #55565c;border-radius:7px;background:#14161a;color:var(--cream);padding:11px 13px;font-size:13px;margin-bottom:12px}
+  #savedList{display:grid;gap:10px}.savedItem{border-top:1px solid #45464c;padding:14px 0 3px;display:grid;gap:8px}
+  .savedMeta{display:flex;justify-content:space-between;gap:8px;color:#85827c;font-size:8px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+  .savedQuestion{font-family:Georgia,"Times New Roman",serif;color:var(--cream);font-size:18px;line-height:1.35}
+  .savedActions{display:flex;justify-content:flex-end;gap:7px}.empty{text-align:center;padding:30px 10px;color:#8b8881;font-size:13px;line-height:1.5}
+  footer{margin-top:auto;color:#5f6064;text-align:center;font-size:8px;letter-spacing:.12em;text-transform:uppercase;line-height:1.5}
+
+  @media(max-width:620px){
+    body{padding:14px 13px 20px;gap:14px}.brandMark{width:38px;height:38px}.brandText strong{font-size:17px;white-space:normal}.brandText span{display:none}
+    .headerTools{gap:5px}.toolButton{min-width:37px;height:37px}.toolButton.wide{border-radius:50%;padding:0}.toolButton .toolLabel{display:none}
+    main{justify-content:flex-start}.questionCard{min-height:390px;padding:48px 23px 38px}#questionText{font-size:28px}#categoryLabel{margin-bottom:18px}
+    .mainAction{min-width:240px}.depthControl{grid-template-columns:repeat(2,1fr)}.modalCard{padding:21px 18px}.modalActions{align-items:stretch;flex-direction:column}.modalActions .btn{width:100%}
+  }
+  @media(max-width:360px){.brandText strong{font-size:15px}#questionText{font-size:25px}.questionCard{min-height:370px}.categoryGrid{grid-template-columns:1fr}.cardTools{gap:7px}}
+</style>
+</head>
+<body>
+
+<header class="appHeader">
+  <div class="brand">
+    <span class="brandMark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 8h8M8 12h5"/></svg></span>
+    <span class="brandText"><strong>Talk Amongst Yourselves</strong><span>Skip the small talk</span></span>
+  </div>
+  <div class="headerTools">
+    <button id="savedBtn" class="toolButton wide" aria-label="Open saved cards" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span class="toolLabel">Saved</span><span id="savedCount">0</span></button>
+    <button id="settingsBtn" class="toolButton" aria-label="Deck settings" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/></svg></button>
+    <button id="helpBtn" class="toolButton" aria-label="How to play" aria-haspopup="dialog">?</button>
+  </div>
+</header>
+
+<main>
+  <div class="deckMeta"><span id="cardNumber">Card 001 of 1184</span><span id="depthBadge">Revealing</span></div>
+  <article id="questionCard" class="questionCard" tabindex="0">
+    <span id="categoryLabel">Time Machine</span>
+    <h1 id="questionText"></h1>
+    <p id="followUp" hidden><strong>One more layer</strong><span id="followUpText"></span></p>
+  </article>
+  <div class="cardTools">
+    <button id="saveCard" class="btn quiet" aria-pressed="false">Save card</button>
+    <button id="deeperBtn" class="btn quiet">One more layer</button>
+  </div>
+  <button id="nextCard" class="btn primary mainAction">Both answered - draw again</button>
+  <button id="passCard" class="btn quiet">Not tonight</button>
+  <p id="ruleLine" class="ruleLine">Both people answer honestly. Follow-up questions are encouraged.</p>
+</main>
+
+<div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
+  <div class="modalCard">
+    <div class="modalHead"><h2 id="settingsTitle">Choose the conversation</h2><button id="closeSettings" class="btn quiet">Close</button></div>
+    <span class="sectionLabel">Depth</span>
+    <div id="depthControl" class="depthControl">
+      <button class="segment" data-depth="all" aria-pressed="true">Mixed</button>
+      <button class="segment" data-depth="light" aria-pressed="false">Light</button>
+      <button class="segment" data-depth="revealing" aria-pressed="false">Revealing</button>
+      <button class="segment" data-depth="deep" aria-pressed="false">Deep End</button>
+    </div>
+    <span class="sectionLabel">Dockets</span>
+    <div id="categoryGrid" class="categoryGrid"></div>
+    <div class="modalActions">
+      <button id="resetSeen" class="btn danger">Reset seen cards</button>
+      <button id="applySettings" class="btn primary">Apply and draw</button>
+    </div>
+  </div>
+</div>
+
+<div id="savedModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="savedTitle" hidden>
+  <div class="modalCard">
+    <div class="modalHead"><h2 id="savedTitle">Saved Cards</h2><button id="closeSaved" class="btn quiet">Close</button></div>
+    <input id="savedSearch" type="search" placeholder="Search saved questions..." aria-label="Search saved cards">
+    <div id="savedList"></div>
+    <div class="modalActions"><span></span><button id="doneSaved" class="btn primary">Return to the conversation</button></div>
+  </div>
+</div>
+
+<div id="rulesModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" hidden>
+  <div class="modalCard">
+    <div class="modalHead"><h2 id="rulesTitle">How to Play</h2><button id="closeRules" class="btn quiet">Close</button></div>
+    <ol class="rulesList">
+      <li>The passenger draws a card and reads it aloud. The driver only listens and talks, keeping eyes and hands off the phone.</li>
+      <li>Both people answer completely honestly. An answer is not finished until the other person understands the reasoning behind it.</li>
+      <li>Tap <strong>One more layer</strong> whenever an answer deserves a better follow-up.</li>
+      <li>There are no points, timers, correct answers, or winners. The conversation is the entire game.</li>
+      <li>Either person may say <strong>Not tonight</strong> to any card. No explanation is required.</li>
+    </ol>
+    <p class="privacy"><strong>Private by design:</strong> this page runs fully offline. Seen and saved cards stay only in this browser.</p>
+  </div>
+</div>
+
+<footer>Fully offline &nbsp;·&nbsp; no account, tracking, or analytics &nbsp;·&nbsp; saved cards stay on this device</footer>
+
+<script>
+(function(){
+"use strict";
+
+const CATEGORY_META={
+  confession:{name:"Low-Stakes Criminal"},
+  hypothetical:{name:"Absurd Hypotheticals"},
+  grudge:{name:"Secret Grudge"},
+  nostalgia:{name:"Time Machine"},
+  us:{name:"Us, Apparently"},
+  parallel:{name:"Parallel Lives"},
+  existential:{name:"Mild Existentialism"},
+  oddities:{name:"Tiny Weirdness"}
+};
+const DEPTH_META={light:"Light",revealing:"Revealing",deep:"Deep End"};
+
+const CURATED={
+confession:[
+"If you were arrested tomorrow with no explanation, what would your friends immediately assume you had done?",
+"What is the most embarrassing thing you have done to save a microscopic amount of money?",
+"What harmless lie have you told purely to end a conversation faster?",
+"What item have you accidentally taken, realized later, and quietly decided to keep?",
+"What free trial have you treated like a long-term financial strategy?",
+"When have you pretended not to see a message because answering it looked exhausting?",
+"What minor rule do you break so routinely that you no longer consider it a rule?",
+"What subject have you confidently discussed while knowing almost nothing about it?",
+"What is the pettiest revenge you have taken that harmed absolutely nobody?",
+"What behavior do you judge in other people even though you do it yourself?",
+"What is the least honest way you have ever divided a shared snack?",
+"What chore have you deliberately done badly so nobody would ask you again?",
+"What is the longest you have kept up a misunderstanding because correcting it felt awkward?",
+"What purchase have you defended long after realizing it was a mistake?",
+"What flaw do you work hardest to present as a charming personality trait?",
+"What compliment have you accepted despite knowing it was based on false information?",
+"What tiny deception from your childhood did you get away with so completely that you can confess now?",
+"What habit would be most damaging if everyone you know received a weekly report about it?",
+"When have you known you were wrong but continued arguing because retreat felt impossible?",
+"What part of your personality is mostly an elaborate system for avoiding something uncomfortable?"
+],
+hypothetical:[
+"If a ghost had to haunt your home, what single annoying habit would you choose for it?",
+"If every lie you told produced a loud doorbell sound, how would your daily life change?",
+"You may create one clone, but it can perform only one chore and openly resents you. Which chore do you assign?",
+"If you became invisible for twenty minutes every day at a random time, what practical problem would appear first?",
+"If humans had to hibernate for three months, which months would you choose and what would be in your nest?",
+"If one room in your home existed permanently fifteen minutes in the past, what would you use it for?",
+"If your refrigerator could offer one brutally honest observation per day, would you keep that feature on?",
+"If you could pause time but remained just as tired and hungry, what would you actually do with the extra hours?",
+"If your future self could send you one object but no explanation, what object would be most alarming?",
+"If everyone received a visible rating for one ordinary skill, which skill would cause the most social chaos?",
+"If you had to replace handshakes with a different universal greeting, what would you choose?",
+"If your dreams were public entertainment, what genre would your channel be listed under?",
+"If you could permanently remove one inconvenience from human life, what unexpected problem would its absence create?",
+"If your home gained one secret room overnight, what would convince you not to open it?",
+"If you could know the complete truth about one moment in your past, which moment would you choose?",
+"If every major decision created a visible alternate version of your life, how often would you check on it?",
+"If you could hear one person's internal narration for a day, whose would change how you see them most?",
+"If you were guaranteed a wonderful life but could never explain your strangest choice, what choice might you make?",
+"If you could trade one year of your past for one extra healthy year at the end, would you? Which year?",
+"If the universe answered one question with absolute honesty, what would you be afraid to ask?"
+],
+grudge:[
+"What beloved movie, book, or album do you privately think is wildly overrated?",
+"What supposedly admirable personality trait do you find exhausting in real life?",
+"Which word or corporate phrase would you permanently remove from the language?",
+"What food do people seem to enjoy mainly because they have agreed to enjoy it?",
+"What everyday convenience has made life noticeably worse?",
+"What social tradition survives only because nobody wants to be the first person to stop?",
+"What hobby has the most intimidating ratio of equipment to actual fun?",
+"What piece of common advice becomes useless the moment life gets complicated?",
+"What luxury experience is less enjoyable than its ordinary version?",
+"What minor behavior instantly makes you distrust someone's judgment?",
+"What product has been redesigned repeatedly without ever being improved?",
+"What activity is ruined as soon as someone tries to make it competitive?",
+"What is considered relaxing but makes you personally more anxious?",
+"What trend will people eventually pretend they never participated in?",
+"What belief about adulthood did you accept for far too long?",
+"What opinion have you softened in public because defending it takes too much energy?",
+"What are people praised for doing that often creates more work for everyone around them?",
+"What part of modern life feels like a prank everyone is too polite to acknowledge?",
+"What do you resent being expected to care about?",
+"What unpopular opinion of yours has only become stronger with age?"
+],
+nostalgia:[
+"What discontinued snack would you bring back even if it tasted worse than you remember?",
+"What sound from childhood has almost completely disappeared?",
+"What object in your childhood home felt much more important than it really was?",
+"What was your first completely unnecessary purchase with your own money?",
+"What television commercial still occupies space in your brain without paying rent?",
+"What childhood rule made perfect sense then and none at all now?",
+"What place from your childhood would look shockingly small if you returned today?",
+"What smell instantly returns you to one specific room from your past?",
+"What ordinary day from your teenage years would you quietly revisit for one hour?",
+"What did your family do differently from everyone else's family that you assumed was universal?",
+"What old piece of technology do you miss using, despite it being objectively worse?",
+"What person from your past do you remember mainly through one tiny repeated gesture?",
+"What childhood possession would you most like to hold again for five minutes?",
+"What song is permanently attached to a very specific place or person for you?",
+"If you could give your eighteen-year-old self a ten-second warning, what would you say?",
+"What memory became important only years after it happened?",
+"Which past version of yourself would be most surprised by who you are now?",
+"What did you stop doing without realizing it was the last time?",
+"What family story do you suspect has changed slightly every time it has been told?",
+"Which memory would you preserve perfectly if all the others had to fade naturally?"
+],
+us:[
+"What is something I do that you can identify from another room?",
+"Which of our recurring conversations could be performed from memory like a stage play?",
+"What is one difference between us that makes traveling together easier?",
+"What tiny thing do we both care about far more than other people would understand?",
+"What have we accidentally turned into a tradition?",
+"Which one of us would be better at calmly handling a completely absurd emergency?",
+"What story have you heard me tell enough times that you could take over halfway through?",
+"What do you think I am better at than I give myself credit for?",
+"When do you feel most understood by me without having to explain yourself?",
+"What disagreement between us has taught you something useful?",
+"What do we bring out in each other that other people rarely see?",
+"What assumption did you make about me early on that turned out to be completely wrong?",
+"What ordinary situation makes us function unusually well as a team?",
+"What part of your life became easier once I understood it?",
+"What have you wanted to thank me for but never found a natural moment to mention?",
+"What truth about you do you think I understood before you did?",
+"What part of our relationship would be hardest to explain accurately to someone else?",
+"What do you hope never becomes too ordinary between us?",
+"What conversation do you think changed our relationship without either of us noticing at the time?",
+"What do you trust me to remember about you if you temporarily forget it yourself?"
+],
+parallel:[
+"If you had grown up in a completely different climate, how would your personality be different?",
+"What career would alternate-you choose after making one slightly different decision?",
+"If you had to live one decade of your life under a different name, what name would fit that version of you?",
+"If money and talent were irrelevant, what extremely specific job would you try for one year?",
+"What city do you suspect contains a version of you who made different choices?",
+"If your life had a narrator, whose voice would make your decisions sound most reasonable?",
+"What skill would you master if it required no practice but also earned no money?",
+"If you could exchange daily routines with one person for a week, whose life would be most educational?",
+"What would you do differently if nobody you currently know could ever find out?",
+"Which ordinary decision in your past probably created the largest invisible fork in your life?",
+"If you had been born twenty years earlier or later, which part of you would remain unchanged?",
+"What version of you appears only around certain people?",
+"If you could try one completely different life without losing this one, what would you test first?",
+"What talent might you have developed if somebody had noticed it early?",
+"Which alternate version of your life are you relieved you did not choose?",
+"If you could meet the person you would have become after one different decision, what would you ask first?",
+"What part of your identity depends most heavily on accidents of timing?",
+"If you had to rebuild your life while keeping only three relationships, three objects, and three memories, what survives?",
+"What dream did you abandon for good reasons but still occasionally visit in your head?",
+"If you learned that this was your alternate life, what would you assume happened in the original one?"
+],
+existential:[
+"At what age did you first feel like an adult, and how long did the feeling last?",
+"What ordinary activity makes time pass at a completely different speed for you?",
+"What do you own that feels most like evidence of the person you are?",
+"What is something you want even though receiving it would complicate your life?",
+"Which matters more to you now: being impressive, useful, understood, or free?",
+"What part of your day feels most genuinely yours?",
+"What do you think people misunderstand about contentment?",
+"What belief about yourself are you currently in the process of outgrowing?",
+"What is a problem you might miss if it disappeared tomorrow?",
+"What kind of attention makes you feel seen rather than merely observed?",
+"What are you still trying to prove, and who is the imaginary audience?",
+"What change in your life arrived so slowly that you noticed it only afterward?",
+"What do you consider a successful day now that you would not have valued ten years ago?",
+"Which version of yourself do you consult when making a difficult decision?",
+"What do you hope people feel immediately after spending time with you?",
+"Which regret has taught you enough that you would no longer erase it?",
+"What part of your personality is a choice you make repeatedly rather than a fixed trait?",
+"What would remain important to you if nobody could ever praise you for it?",
+"What are you postponing until you become a person you may already be?",
+"What question about your own life are you avoiding because you suspect you know the answer?"
+],
+oddities:[
+"What completely ordinary object do you have an irrationally strong preference about?",
+"What tiny sensory experience improves your mood every single time?",
+"Which household sound feels more alarming than it deserves to?",
+"What is your most specific and least useful talent?",
+"What mundane place has unusually good energy?",
+"What object do you always choose from a group as if it has a personality?",
+"Which everyday task do you perform in a way that would confuse an observer?",
+"What is the strangest thing you find comforting?",
+"What small inconvenience can ruin your mood far beyond its actual importance?",
+"What visual detail do you notice that other people seem to miss?",
+"What is your most irrational rule about where an object belongs?",
+"What ordinary item would you recognize immediately by touch in complete darkness?",
+"Which room do you behave differently in for no obvious reason?",
+"What minor decision do you make with an absurd amount of care?",
+"What harmless mystery from everyday life do you genuinely want solved?",
+"What object from your home would give the most misleading testimony about your life?",
+"What repetitive part of daily life feels strangely meaningful to you?",
+"What do you notice first when you enter somebody else's home?",
+"What preference of yours seems trivial but is connected to a much deeper story?",
+"What tiny ritual would make you feel unmoored if you suddenly had to stop doing it?"
+]};
+
+const FRAME_SETS={
+confession:{
+topics:["saving a small amount of money","avoiding small talk","getting out of plans","returning a purchase","free food","a workplace shortcut","borrowing something","pretending to understand","hiding a mess","being late","ignoring a message","getting the better seat","using the last of something","avoiding a chore","winning a pointless argument","taking an extra sample"],
+frames:[
+{d:"light",q:"What is the most elaborate thing you have done because of {topic}?"},
+{d:"light",q:"What harmless lie have you told involving {topic}?"},
+{d:"light",q:"What personal rule disappears when {topic} is involved?"},
+{d:"revealing",q:"What would your friends accuse you of doing when it comes to {topic}?"},
+{d:"revealing",q:"What is your least defensible habit around {topic}?"},
+{d:"revealing",q:"What tiny victory are you too proud of involving {topic}?"},
+{d:"deep",q:"What is the line you would never cross, even for {topic}?"},
+{d:"deep",q:"What has {topic} revealed about your character?"}
+]},
+hypothetical:{
+topics:["pausing time","reading minds","being invisible","talking to your past self","seeing ten minutes into the future","never needing sleep","remembering everything","teleporting","rewinding one conversation","cloning yourself","knowing when someone is lying","speaking every language","living twice as long","changing your appearance at will","visiting other people's dreams","asking the universe one question"],
+frames:[
+{d:"light",q:"What boring adult task would you use {topic} to solve first?"},
+{d:"light",q:"How would {topic} ruin your life within a week?"},
+{d:"light",q:"What rule would you impose on yourself if you could use {topic}?"},
+{d:"revealing",q:"Who would notice first if you secretly had the ability of {topic}?"},
+{d:"revealing",q:"What would become unexpectedly awkward if everyone were capable of {topic}?"},
+{d:"revealing",q:"Would you accept {topic} if it came with one mildly annoying condition? What condition?"},
+{d:"deep",q:"What part of your personality would {topic} exaggerate?"},
+{d:"deep",q:"After a year of {topic}, what ordinary thing would you miss?"}
+]},
+grudge:{
+topics:["punctuality","brunch","group chats","ambition","motivational quotes","surprise parties","gift giving","vacations","professional networking","fitness culture","restaurant etiquette","minimalism","nostalgia","productivity","small talk","being spontaneous"],
+frames:[
+{d:"light",q:"What is your most unpopular opinion about {topic}?"},
+{d:"light",q:"What do people pretend to enjoy about {topic}?"},
+{d:"light",q:"What tiny behavior involving {topic} makes you judge someone?"},
+{d:"revealing",q:"What rule should society adopt about {topic}?"},
+{d:"revealing",q:"What is most overrated about {topic}?"},
+{d:"revealing",q:"What opinion about {topic} do you soften in polite company?"},
+{d:"deep",q:"What experience permanently changed your opinion about {topic}?"},
+{d:"deep",q:"What would you defend about {topic}, despite public opinion?"}
+]},
+nostalgia:{
+topics:["school lunches","the family car","your childhood bedroom","summer vacation","a relative's house","birthday parties","weekend mornings","the first day of school","family dinners","shopping malls","old television","road trips","snow days","your first job","neighborhood friends","music from your teens"],
+frames:[
+{d:"light",q:"What is the funniest detail you remember about {topic}?"},
+{d:"light",q:"What smell or sound do you associate with {topic}?"},
+{d:"light",q:"What part of {topic} would be impossible to explain to someone younger?"},
+{d:"revealing",q:"What did {topic} teach you without anyone intending to?"},
+{d:"revealing",q:"Who appears first in your memory when you think about {topic}?"},
+{d:"revealing",q:"What did you misunderstand at the time about {topic}?"},
+{d:"deep",q:"If you could revisit one exact moment involving {topic}, which would you choose?"},
+{d:"deep",q:"What part of who you are now can be traced back to {topic}?"}
+]},
+us:{
+topics:["disagreements","comfortable silence","travel","celebrations","daily routines","stress","taking risks","making plans","food","money","being late","meeting new people","asking for help","changing your mind","rest","making decisions"],
+frames:[
+{d:"light",q:"Which of us is more predictable when it comes to {topic}?"},
+{d:"light",q:"What is our funniest recurring pattern around {topic}?"},
+{d:"light",q:"What would an outside observer misunderstand about us and {topic}?"},
+{d:"revealing",q:"What difference between us around {topic} is secretly useful?"},
+{d:"revealing",q:"What do you think I understand about {topic} that most people miss?"},
+{d:"revealing",q:"How have we changed each other's approach to {topic}?"},
+{d:"deep",q:"What do you trust me to notice about you when {topic} becomes difficult?"},
+{d:"deep",q:"What do you hope we never stop doing when it comes to {topic}?"}
+]},
+parallel:{
+topics:["a different hometown","another career","a new name","a reversed daily schedule","a different decade","a year without work","a life near the ocean","a life in the mountains","a much larger family","a completely different education","sudden fame","total anonymity","a permanent home abroad","a creative profession","a practical profession","starting adulthood over"],
+frames:[
+{d:"light",q:"What would be the first surprising thing about living with {topic}?"},
+{d:"light",q:"What minor habit of yours would survive {topic} unchanged?"},
+{d:"light",q:"What new problem would {topic} create almost immediately?"},
+{d:"revealing",q:"Which part of your personality would thrive with {topic}?"},
+{d:"revealing",q:"What part of your current life would you miss most after choosing {topic}?"},
+{d:"revealing",q:"Who do you imagine you would become through {topic}?"},
+{d:"deep",q:"What does your reaction to {topic} reveal about what you value now?"},
+{d:"deep",q:"Would choosing {topic} feel like becoming more yourself or less? Why?"}
+]},
+existential:{
+topics:["success","time","memory","home","adulthood","luck","identity","regret","attention","ambition","comfort","change","belonging","purpose","legacy","boredom"],
+frames:[
+{d:"light",q:"What is one oddly specific thing you believe about {topic}?"},
+{d:"light",q:"When does {topic} feel most different from what you expected?"},
+{d:"light",q:"What ordinary object somehow represents {topic} to you?"},
+{d:"revealing",q:"What have you changed your mind about regarding {topic}?"},
+{d:"revealing",q:"What do people misunderstand about your relationship with {topic}?"},
+{d:"revealing",q:"What lesson about {topic} did you learn later than you wish you had?"},
+{d:"deep",q:"What are you still trying to understand about {topic}?"},
+{d:"deep",q:"How would your life change if you stopped measuring yourself through {topic}?"}
+]},
+oddities:{
+topics:["socks","spoons","overhead lights","grocery aisles","waiting rooms","hotel rooms","rainy days","empty parking lots","mugs","doorways","laundry","old receipts","alarm clocks","public benches","kitchen counters","unfamiliar bathrooms"],
+frames:[
+{d:"light",q:"What irrationally specific preference do you have about {topic}?"},
+{d:"light",q:"What tiny ritual have you developed around {topic}?"},
+{d:"light",q:"If {topic} had a personality, what would it be like?"},
+{d:"revealing",q:"What do you notice about {topic} that other people seem to ignore?"},
+{d:"revealing",q:"What memory or feeling do you unexpectedly associate with {topic}?"},
+{d:"revealing",q:"What does someone's approach to {topic} reveal about them?"},
+{d:"deep",q:"Why do you think your feelings about {topic} are stronger than the subject deserves?"},
+{d:"deep",q:"What deeper preference might be hiding inside your opinion about {topic}?"}
+]}};
+
+const deck=[];
+Object.keys(CURATED).forEach(category=>{
+  CURATED[category].forEach((question,index)=>{
+    const depth=index<7?"light":index<14?"revealing":"deep";
+    deck.push({id:"c-"+category+"-"+index,category,depth,question,curated:true});
+  });
+});
+Object.keys(FRAME_SETS).forEach(category=>{
+  FRAME_SETS[category].topics.forEach((topic,topicIndex)=>{
+    FRAME_SETS[category].frames.forEach((frame,frameIndex)=>{
+      deck.push({id:"f-"+category+"-"+topicIndex+"-"+frameIndex,category,depth:frame.d,question:frame.q.replace("{topic}",topic),curated:false});
+    });
+  });
+});
+
+const FOLLOW_UPS=[
+"What answer would you have given ten years ago?",
+"What is the story behind that answer?",
+"Which part of your own answer surprised you?",
+"What would have to happen for your answer to change?",
+"Who influenced that answer without realizing it?",
+"What is the strongest argument against your own answer?",
+"When did you first notice this about yourself?",
+"What part of that answer is hardest to explain?",
+"What example immediately came to mind but you did not mention?",
+"How does your answer show up in ordinary life?",
+"What do you wish were different about your answer?",
+"What would somebody who knows you well predict you would say?",
+"Is that answer based more on experience, instinct, or hope?",
+"Which word in your answer is doing the most work?",
+"What are you leaving out because it complicates the answer?",
+"Would you want the other person to answer the same way?",
+"What does that answer protect you from?",
+"What is the kindest interpretation of that answer?",
+"What detail would make your answer make perfect sense?",
+"What is one memory that supports your answer?",
+"When has the opposite been true?",
+"What question do you wish had been asked instead?",
+"How confident are you in that answer, really?",
+"What part of this will you still be thinking about tomorrow?"
+];
+
+const $=id=>document.getElementById(id);
+const SEEN_KEY="talkAmongstSeenV1",SAVED_KEY="talkAmongstSavedV1",SETTINGS_KEY="talkAmongstSettingsV1";
+let seen=new Set(readLocal(SEEN_KEY,[]));
+let saved=readLocal(SAVED_KEY,[]);
+let settings=readLocal(SETTINGS_KEY,{depth:"all",categories:Object.keys(CATEGORY_META)});
+let current=null,lastFollowUp="",resetArmed=false,pendingDepth=settings.depth;
+
+function readLocal(key,fallback){try{const value=JSON.parse(localStorage.getItem(key));return value===null?fallback:value;}catch(e){return fallback;}}
+function writeLocal(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch(e){}}
+function randomItem(items){return items[(Math.random()*items.length)|0];}
+function eligible(item){return settings.categories.includes(item.category)&&(settings.depth==="all"||item.depth===settings.depth);}
+
+function drawCard(specific){
+  if(specific){current=specific;}
+  else{
+    let available=deck.filter(item=>eligible(item)&&!seen.has(item.id));
+    if(!available.length){deck.filter(eligible).forEach(item=>seen.delete(item.id));available=deck.filter(eligible);}
+    const curated=available.filter(item=>item.curated),generated=available.filter(item=>!item.curated);
+    current=randomItem(curated.length&&Math.random()<.7?curated:generated.length?generated:curated);
+    seen.add(current.id);writeLocal(SEEN_KEY,Array.from(seen));
+  }
+  $("categoryLabel").textContent=CATEGORY_META[current.category].name;
+  $("questionText").textContent=current.question;
+  $("depthBadge").textContent=DEPTH_META[current.depth];
+  $("cardNumber").textContent="Card "+String(seen.size).padStart(3,"0")+" of "+deck.length;
+  $("followUp").hidden=true;lastFollowUp="";$("deeperBtn").textContent="One more layer";
+  syncSaveButton();
+  const card=$("questionCard");card.classList.remove("changing");void card.offsetWidth;card.classList.add("changing");
+}
+function syncSaveButton(){
+  const isSaved=current&&saved.some(item=>item.id===current.id);
+  $("saveCard").setAttribute("aria-pressed",String(isSaved));$("saveCard").textContent=isSaved?"Saved":"Save card";
+}
+$("saveCard").addEventListener("click",()=>{
+  const exists=saved.some(item=>item.id===current.id);
+  saved=exists?saved.filter(item=>item.id!==current.id):[{id:current.id,category:current.category,depth:current.depth,question:current.question},...saved];
+  writeLocal(SAVED_KEY,saved);syncSavedCount();syncSaveButton();
+});
+$("deeperBtn").addEventListener("click",()=>{
+  let next=randomItem(FOLLOW_UPS);while(FOLLOW_UPS.length>1&&next===lastFollowUp)next=randomItem(FOLLOW_UPS);
+  lastFollowUp=next;$("followUpText").textContent=next;$("followUp").hidden=false;$("deeperBtn").textContent="Another angle";
+});
+$("nextCard").addEventListener("click",()=>{drawCard();$("ruleLine").textContent="Both people answer honestly. Follow-up questions are encouraged.";});
+$("passCard").addEventListener("click",()=>{drawCard();$("ruleLine").textContent="Mutual veto granted. No explanation required.";});
+
+function buildCategories(){
+  const grid=$("categoryGrid");
+  Object.keys(CATEGORY_META).forEach(key=>{
+    const label=document.createElement("label");label.className="categoryToggle";
+    const input=document.createElement("input");input.type="checkbox";input.value=key;input.checked=settings.categories.includes(key);
+    const span=document.createElement("span");span.textContent=CATEGORY_META[key].name;label.append(input,span);grid.appendChild(label);
+  });
+  grid.addEventListener("change",event=>{if(!selectedCategories().length)event.target.checked=true;});
+}
+function selectedCategories(){return Array.from(document.querySelectorAll("#categoryGrid input:checked")).map(input=>input.value);}
+function syncDepthControl(){document.querySelectorAll("#depthControl .segment").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.depth===pendingDepth)));}
+function syncSettingsForm(){
+  pendingDepth=settings.depth;syncDepthControl();
+  document.querySelectorAll("#categoryGrid input").forEach(input=>{input.checked=settings.categories.includes(input.value);});
+}
+$("depthControl").addEventListener("click",event=>{const button=event.target.closest(".segment");if(!button)return;pendingDepth=button.dataset.depth;syncDepthControl();});
+$("applySettings").addEventListener("click",()=>{settings.depth=pendingDepth;settings.categories=selectedCategories();writeLocal(SETTINGS_KEY,settings);closeModal($("settingsModal"),$("settingsBtn"));drawCard();});
+$("resetSeen").addEventListener("click",()=>{
+  if(!resetArmed){resetArmed=true;$("resetSeen").textContent="Tap again to confirm";return;}
+  seen.clear();writeLocal(SEEN_KEY,[]);resetArmed=false;$("resetSeen").textContent="Seen cards reset";
+});
+
+function syncSavedCount(){$("savedCount").textContent=saved.length;}
+function renderSaved(){
+  const query=$("savedSearch").value.trim().toLowerCase();
+  const matches=saved.filter(item=>!query||(item.question+" "+CATEGORY_META[item.category].name).toLowerCase().includes(query));
+  const list=$("savedList");list.replaceChildren();
+  if(!matches.length){const empty=document.createElement("p");empty.className="empty";empty.textContent=saved.length?"No saved cards match that search.":"No saved cards yet. Keep the questions you want to revisit.";list.appendChild(empty);return;}
+  matches.forEach(item=>{
+    const article=document.createElement("article");article.className="savedItem";
+    const meta=document.createElement("div");meta.className="savedMeta";
+    const category=document.createElement("span");category.textContent=CATEGORY_META[item.category].name;
+    const depth=document.createElement("span");depth.textContent=DEPTH_META[item.depth];meta.append(category,depth);
+    const question=document.createElement("p");question.className="savedQuestion";question.textContent=item.question;
+    const actions=document.createElement("div");actions.className="savedActions";
+    const revisit=document.createElement("button");revisit.className="btn quiet";revisit.textContent="Revisit";revisit.dataset.revisit=item.id;
+    const remove=document.createElement("button");remove.className="btn quiet";remove.textContent="Remove";remove.dataset.remove=item.id;
+    actions.append(revisit,remove);article.append(meta,question,actions);list.appendChild(article);
+  });
+}
+$("savedList").addEventListener("click",event=>{
+  const revisit=event.target.closest("[data-revisit]"),remove=event.target.closest("[data-remove]");
+  if(revisit){const item=deck.find(card=>card.id===revisit.dataset.revisit);if(item){closeModal($("savedModal"),$("savedBtn"));drawCard(item);}return;}
+  if(remove){saved=saved.filter(item=>item.id!==remove.dataset.remove);writeLocal(SAVED_KEY,saved);syncSavedCount();syncSaveButton();renderSaved();}
+});
+$("savedSearch").addEventListener("input",renderSaved);
+
+function openModal(modal,focusTarget){modal.hidden=false;focusTarget.focus();}
+function closeModal(modal,returnFocus){modal.hidden=true;returnFocus.focus();}
+$("settingsBtn").addEventListener("click",()=>{resetArmed=false;$("resetSeen").textContent="Reset seen cards";syncSettingsForm();openModal($("settingsModal"),$("closeSettings"));});
+$("closeSettings").addEventListener("click",()=>closeModal($("settingsModal"),$("settingsBtn")));
+$("savedBtn").addEventListener("click",()=>{$("savedSearch").value="";renderSaved();openModal($("savedModal"),$("savedSearch"));});
+$("closeSaved").addEventListener("click",()=>closeModal($("savedModal"),$("savedBtn")));
+$("doneSaved").addEventListener("click",()=>closeModal($("savedModal"),$("savedBtn")));
+$("helpBtn").addEventListener("click",()=>openModal($("rulesModal"),$("closeRules")));
+$("closeRules").addEventListener("click",()=>closeModal($("rulesModal"),$("helpBtn")));
+[$("settingsModal"),$("savedModal"),$("rulesModal")].forEach(modal=>modal.addEventListener("click",event=>{
+  if(event.target!==modal)return;
+  const focus=modal===$("settingsModal")?$("settingsBtn"):modal===$("savedModal")?$("savedBtn"):$("helpBtn");closeModal(modal,focus);
+}));
+document.addEventListener("keydown",event=>{
+  if(event.key!=="Escape")return;
+  if(!$("settingsModal").hidden)closeModal($("settingsModal"),$("settingsBtn"));
+  else if(!$("savedModal").hidden)closeModal($("savedModal"),$("savedBtn"));
+  else if(!$("rulesModal").hidden)closeModal($("rulesModal"),$("helpBtn"));
+});
+
+buildCategories();syncDepthControl();syncSavedCount();drawCard();
+})();
+</script>
+</body>
+</html>
