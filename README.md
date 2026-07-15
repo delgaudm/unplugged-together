@@ -1,59 +1,52 @@
-# Word Shaker
+# Unplugged Together
 
-A self-contained, offline-friendly word dice game designed for **real-world play**.
+Offline multiplayer games for face-to-face fun.
 
-![Word Shaker UI](word-shaker-ui.png)
+No internet. No accounts. No tracking. Just games you play with people who are actually in the room.
 
 ## The Idea
 
-Put the phone in the middle of the table. Everyone plays together.
+Put the phone or tablet in the middle of the table. Everyone plays together.
 
-No "find other players." No "join a game." No entering words into the app. This isn't a multiplayer game — it's a **tool for a shared experience**.
+These aren't apps you disappear into — they're tools that enable real-world connection. Save any game to your home screen and it works anywhere: road trips, airplane mode, family game night, camping, whenever you want to play with people who are *actually there*.
 
-- Shake the board to roll the 16 dice
-- A 3-minute timer begins
-- Everyone writes down every word they can spot
-- When time's up, compare lists and score what's unique to you
+## Games
 
-Perfect for family game night, road trips, airplane rides, or anywhere you want to play with people who are *actually there*.
+### [Word Shaker](word-shaker/word-shaker.html)
+
+A word dice game. Shake the 16 dice, find words formed from adjacent letters, and score what's unique to you.
+
+- 3-minute rounds
+- 4×4 grid of dice with 3D physics shake
+- Play with paper and pencil
+- Best for 2–8 players
+
+### [Imposter](imposter/imposter.html)
+
+A social deduction game. One person is the imposter and has no idea where everyone else is. Ask questions, spot the fake.
+
+- Configurable players (3–10) and time (3–10 minutes)
+- Pass-and-peek card system
+- Over 100 locations included
+- Best for 4–8 players
+
+### [Categories](categories/categories.html)
+
+A creative thinking game. Get a letter and a list of categories — write an answer for each that starts with that letter before time runs out.
+
+- Configurable time (1–6 minutes) and categories (6–16)
+- 200+ categories in the deck
+- Cross out matching answers, score what's unique
+- Best for 2–10 players
 
 ## How to Use
 
-1. **Open** `word-shaker.html` in any modern web browser
-2. **Shake** the board and place the device in the center of the table
-3. **Play** — pencil and paper required, words formed from adjacent letters
-4. **Score** when the timer ends (cross out any word found by two or more players)
+1. **Open** any game's HTML file in a web browser
+2. **Save** it to your home screen or bookmarks
+3. **Play** anytime, anywhere — no connection needed
 
-### Scoring
+Everything runs entirely on your device. No cookies, no storage, no tracking, no analytics.
 
-| Letters | Points |
-|---------|--------|
-| 3–4     | 1      |
-| 5       | 2      |
-| 6       | 3      |
-| 7       | 5      |
-| 8+      | 11     |
+---
 
-## Play Anytime, Anywhere
-
-Word Shaker runs **entirely on your device**:
-
-- No internet connection required
-- No cookies, no storage, no tracking, no analytics
-- Works fully offline once saved
-
-### Saving to Your Device
-
-**On your phone:** Open the page, then use "Save to Home Screen" (iOS) or "Add to Home Screen" (Android) to have it always available — even on an airplane.
-
-**On your computer:** Save the HTML file somewhere convenient and open it in any browser.
-
-## Tech Notes
-
-Built with vanilla HTML, CSS, and JavaScript — no frameworks, no dependencies. Features a custom 3D physics simulation for the dice shake using quaternions, CSS 3D transforms for rendering, and the Web Audio API for the end-of-round chime.
-
-The `Qu` die counts as two letters. Underlined letters (M, W, N, Z) indicate orientation.
-
-## License
-
-Free to use and enjoy. No warranties, but lots of fun intended.
+Made for gathering, not scrolling. Enjoy.
