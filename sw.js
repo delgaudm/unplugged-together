@@ -1,4 +1,4 @@
-const CACHE_NAME="unplugged-together-v1";
+const CACHE_NAME="unplugged-together-v2";
 const ASSETS=[
   "./",
   "./index.html",
@@ -13,6 +13,7 @@ const ASSETS=[
   "./greenlight/greenlight.html",
   "./petty-court/petty-court.html",
   "./talk-amongst-yourselves/talk-amongst-yourselves.html",
+  "./would-you-rather/would-you-rather.html",
   "./screenshots/launcher.jpg",
   "./screenshots/launcher-mobile.jpg",
   "./screenshots/word-shaker.jpg",
@@ -21,7 +22,8 @@ const ASSETS=[
   "./screenshots/same-page.jpg",
   "./screenshots/greenlight.jpg",
   "./screenshots/petty-court.jpg",
-  "./screenshots/talk-amongst-yourselves.jpg"
+  "./screenshots/talk-amongst-yourselves.jpg",
+  "./screenshots/would-you-rather.jpg"
 ];
 
 self.addEventListener("install",event=>{

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#16191c">
+<meta name="description" content="A forced-choice conversation game with more than one thousand dilemmas.">
+<title>Would You Rather?</title>
+<style>
+  :root{
+    --night:#16191c;--night-hi:#25292d;--panel:#202429;--line:#41464c;
+    --paper:#f4eddd;--muted:#9d9b94;--teal:#67bbb5;--teal-dark:#287a76;
+    --coral:#e1705f;--coral-dark:#963d33;--gold:#deb75b;--ink:#211e1a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{min-height:100%;background:var(--night)}
+  body{min-height:100vh;background:radial-gradient(100% 66% at 50% 0%,var(--night-hi),var(--night) 70%);color:var(--paper);font-family:ui-sans-serif,"Helvetica Neue",Arial,sans-serif;display:flex;flex-direction:column;align-items:center;padding:17px 18px 24px;gap:15px}
+  button,input{font:inherit}button{cursor:pointer}[hidden]{display:none!important}
+  button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+  .appHeader{width:min(850px,100%);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}.brandMark{width:43px;height:43px;border:2px solid var(--gold);border-radius:50%;display:grid;place-items:center;color:var(--gold);font-family:Georgia,"Times New Roman",serif;font-size:18px;font-weight:700;flex:0 0 auto}.brandText strong{display:block;font-family:Georgia,"Times New Roman",serif;font-size:23px;line-height:1;letter-spacing:0}.brandText span{display:block;margin-top:5px;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+  .headerTools{display:flex;gap:8px;flex:0 0 auto}.toolButton{height:40px;min-width:40px;border:1px solid #555a60;border-radius:999px;background:transparent;color:#bbb7ae;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 11px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.toolButton svg{width:16px;height:16px}.toolButton:hover{border-color:#777d84;color:var(--paper)}
+  main{width:min(850px,100%);display:grid;gap:13px}.deckMeta{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--muted);font:800 9px ui-monospace,Menlo,monospace;letter-spacing:.13em;text-transform:uppercase}.badge{border:1px solid rgba(222,183,91,.45);border-radius:999px;padding:5px 8px;color:#e8cb85}
+  .decisionBoard{position:relative;border:1px solid var(--line);border-radius:8px;background:#1e2226;padding:16px;box-shadow:0 22px 48px rgba(0,0,0,.35)}
+  .lead{text-align:center;color:#aaa79f;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin:2px 0 14px}
+  .options{display:grid;grid-template-columns:1fr 54px 1fr;align-items:stretch}.option{min-height:265px;padding:27px 25px 28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:7px;color:#10201f;position:relative;overflow:hidden}.option.a{background:var(--teal);box-shadow:inset 0 -12px 0 rgba(17,78,75,.18)}.option.b{background:var(--coral);color:#2d1411;box-shadow:inset 0 -12px 0 rgba(102,30,24,.16)}.optionLabel{position:absolute;top:17px;left:18px;font-size:9px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;opacity:.72}.optionText{max-width:330px;font-family:Georgia,"Times New Roman",serif;font-size:29px;line-height:1.19;letter-spacing:0}.or{display:grid;place-items:center;z-index:2}.or span{width:48px;height:48px;border:5px solid #1e2226;border-radius:50%;background:var(--gold);color:#282012;display:grid;place-items:center;font-size:11px;font-weight:900;letter-spacing:.08em;box-shadow:0 5px 14px rgba(0,0,0,.32)}
+  .complication{margin-top:13px;border:1px solid rgba(222,183,91,.55);border-radius:7px;background:#29271f;padding:14px 17px;text-align:center;color:#e6d6ae;font-size:14px;line-height:1.45}.complication strong{display:block;margin-bottom:5px;color:var(--gold);font-size:9px;letter-spacing:.17em;text-transform:uppercase}
+  .toolbar{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.btn{min-height:43px;border:0;border-radius:999px;padding:11px 18px;background:var(--gold);color:#211a0d;font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;box-shadow:0 4px 0 #8e6d29}.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #8e6d29}.btn.quiet{border:1px solid #555a60;background:transparent;color:#b8b4ab;box-shadow:none}.btn.quiet:active{transform:none}.btn.quiet[aria-pressed="true"]{border-color:var(--gold);color:var(--gold)}.btn.danger{border:1px solid rgba(225,112,95,.55);background:transparent;color:#ed8e7f;box-shadow:none}
+  .choicePanel{border-top:1px solid var(--line);padding-top:14px;text-align:center;display:grid;gap:11px}.choicePanel p{color:#c8c2b6;font-size:13px;line-height:1.4}.choiceButtons{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choice{min-height:52px;border:1px solid #5c6268;border-radius:7px;background:rgba(255,255,255,.03);color:var(--paper);font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.choice.same{border-color:rgba(103,187,181,.7)}.choice.split{border-color:rgba(225,112,95,.72)}
+  .verdict{border:1px solid var(--line);border-radius:7px;background:#202429;padding:18px 20px;text-align:center;display:grid;gap:8px}.verdictLabel{color:var(--gold);font-size:9px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}.verdict h2{font-family:Georgia,"Times New Roman",serif;font-size:22px;line-height:1.25;letter-spacing:0}.verdict p{color:#aaa69e;font-size:13px;line-height:1.45}.nextButton{justify-self:center;min-width:245px}
+  .ruleLine{text-align:center;color:#74777a;font-size:10px;line-height:1.45}.modal{position:fixed;inset:0;z-index:20;background:rgba(7,9,10,.87);display:flex;align-items:center;justify-content:center;padding:18px}.modalCard{width:min(620px,100%);max-height:88vh;overflow:auto;border:1px solid #585d63;border-radius:8px;background:#25292e;color:#d5cfc2;padding:24px;box-shadow:0 30px 70px rgba(0,0,0,.7)}.modalHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.modalHead h2{font-family:Georgia,"Times New Roman",serif;color:var(--paper);font-size:24px;letter-spacing:0}.sectionLabel{display:block;margin:18px 0 9px;color:var(--muted);font-size:9px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}.toneControl{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.segment{min-height:43px;border:1px solid #565b61;border-radius:7px;background:transparent;color:#aaa79f;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.segment[aria-pressed="true"]{border-color:var(--gold);background:rgba(222,183,91,.1);color:#f0d99f}.categoryGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.categoryToggle{position:relative}.categoryToggle input{position:absolute;opacity:0;pointer-events:none}.categoryToggle span{min-height:45px;display:grid;place-items:center;border:1px solid #565b61;border-radius:7px;padding:8px;color:#aaa79f;text-align:center;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.categoryToggle input:checked+span{border-color:var(--teal);background:rgba(103,187,181,.1);color:#c7e9e6}.categoryToggle input:focus-visible+span{outline:3px solid var(--gold);outline-offset:3px}.modalActions{margin-top:18px;display:flex;align-items:center;justify-content:space-between;gap:10px}.rulesList{padding-left:20px;display:grid;gap:11px;font-size:14px;line-height:1.5}.privacy{margin-top:16px;color:#96938c;font-size:12px;line-height:1.45}.privacy strong{color:var(--teal)}#savedSearch{width:100%;border:1px solid #575c62;border-radius:7px;background:#171a1d;color:var(--paper);padding:12px 13px;font-size:13px;margin-bottom:10px}.savedList{display:grid;gap:9px}.savedItem{border-top:1px solid #484d52;padding:13px 0 4px;display:grid;gap:7px}.savedMeta{display:flex;justify-content:space-between;gap:8px;color:#96938c;font-size:8px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.savedQuestion{font-family:Georgia,"Times New Roman",serif;color:var(--paper);font-size:17px;line-height:1.35}.savedActions{display:flex;justify-content:flex-end;gap:7px}.empty{text-align:center;padding:28px 8px;color:#8c8a84;font-size:13px;line-height:1.5}
+  footer{margin-top:auto;text-align:center;color:#62666a;font-size:9px;letter-spacing:.1em;text-transform:uppercase;line-height:1.5}
+  @keyframes enter{from{opacity:.2;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}.decisionBoard.changing{animation:enter .22s ease-out}
+  @media(max-width:650px){body{padding:13px 12px 19px;gap:13px}.brandText strong{font-size:19px}.brandText span{display:none}.brandMark{width:38px;height:38px}.toolLabel{display:none}.decisionBoard{padding:11px}.options{grid-template-columns:1fr;grid-template-rows:auto 38px auto}.option{min-height:180px;padding:36px 20px 28px}.optionText{font-size:25px}.or span{width:44px;height:44px;border-width:5px}.lead{margin-top:5px}.choiceButtons{grid-template-columns:1fr 1fr}.toneControl{grid-template-columns:repeat(2,1fr)}.modalCard{padding:20px 17px}.modalActions{align-items:stretch;flex-direction:column}.modalActions .btn{width:100%}.nextButton{width:100%}}
+  @media(max-width:370px){.option{min-height:168px}.optionText{font-size:22px}.choiceButtons{grid-template-columns:1fr}.categoryGrid{grid-template-columns:1fr}.toolButton{padding:0 9px}}
+</style>
+</head>
+<body>
+<header class="appHeader">
+  <div class="brand"><span class="brandMark" aria-hidden="true">A/B</span><span class="brandText"><strong>Would You Rather?</strong><span>Two choices. No escape hatch.</span></span></div>
+  <div class="headerTools">
+    <button id="savedBtn" class="toolButton" aria-label="Open saved dilemmas" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span class="toolLabel">Saved</span><span id="savedCount">0</span></button>
+    <button id="settingsBtn" class="toolButton" aria-label="Deck settings" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/></svg></button>
+    <button id="helpBtn" class="toolButton" aria-label="How to play" aria-haspopup="dialog">?</button>
+  </div>
+</header>
+
+<main>
+  <div class="deckMeta"><span id="cardNumber">Dilemma 001 / 1104</span><span id="categoryBadge" class="badge">Everyday Tradeoffs</span></div>
+  <section id="decisionBoard" class="decisionBoard" data-testid="decision-board">
+    <p class="lead">Would you rather...</p>
+    <div class="options">
+      <article class="option a"><span class="optionLabel">Option A</span><p id="optionA" class="optionText"></p></article>
+      <div class="or" aria-hidden="true"><span>OR</span></div>
+      <article class="option b"><span class="optionLabel">Option B</span><p id="optionB" class="optionText"></p></article>
+    </div>
+    <div id="complication" class="complication" aria-live="polite" hidden><strong>Make it harder</strong><span id="complicationText"></span></div>
+  </section>
+  <div class="toolbar">
+    <button id="saveCard" class="btn quiet" aria-pressed="false">Save dilemma</button>
+    <button id="harderBtn" class="btn quiet">Make it harder</button>
+  </div>
+  <section id="choicePanel" class="choicePanel">
+    <p>Commit out loud. No both, neither, maybe, or secret third option.</p>
+    <div class="choiceButtons"><button id="sameChoice" class="choice same">We chose the same</button><button id="splitChoice" class="choice split">Split decision</button></div>
+  </section>
+  <section id="verdict" class="verdict" aria-live="polite" hidden>
+    <span id="verdictLabel" class="verdictLabel"></span><h2 id="discussionPrompt"></h2><p id="discussionNudge"></p>
+    <button id="nextCard" class="btn nextButton">Next dilemma</button>
+  </section>
+  <p class="ruleLine">Passenger runs the phone. Driver answers entirely by voice.</p>
+</main>
+
+<div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
+  <div class="modalCard">
+    <div class="modalHead"><h2 id="settingsTitle">Build the deck</h2><button id="closeSettings" class="btn quiet">Close</button></div>
+    <span class="sectionLabel">Tone</span>
+    <div id="toneControl" class="toneControl"><button class="segment" data-tone="all" aria-pressed="true">Mixed</button><button class="segment" data-tone="silly" aria-pressed="false">Silly</button><button class="segment" data-tone="thoughtful" aria-pressed="false">Thoughtful</button><button class="segment" data-tone="impossible" aria-pressed="false">Impossible</button></div>
+    <span class="sectionLabel">Categories</span><div id="categoryGrid" class="categoryGrid"></div>
+    <div class="modalActions"><button id="resetSeen" class="btn danger">Reset seen dilemmas</button><button id="applySettings" class="btn">Apply and draw</button></div>
+  </div>
+</div>
+
+<div id="savedModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="savedTitle" hidden>
+  <div class="modalCard">
+    <div class="modalHead"><h2 id="savedTitle">Saved Dilemmas</h2><button id="closeSaved" class="btn quiet">Close</button></div>
+    <input id="savedSearch" type="search" placeholder="Search saved dilemmas..." aria-label="Search saved dilemmas"><div id="savedList" class="savedList"></div>
+    <div class="modalActions"><span></span><button id="doneSaved" class="btn">Return to the dilemma</button></div>
+  </div>
+</div>
+
+<div id="rulesModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" hidden>
+  <div class="modalCard">
+    <div class="modalHead"><h2 id="rulesTitle">How to Play</h2><button id="closeRules" class="btn quiet">Close</button></div>
+    <ol class="rulesList">
+      <li>The passenger reads both choices aloud. The driver keeps eyes and hands off the phone.</li>
+      <li>Everyone must choose A or B. "Both," "neither," and "I don't know" are not options.</li>
+      <li>Commit at the same time, then mark whether the group agreed or split.</li>
+      <li>Use the discussion prompt to defend the choice. Tap <strong>Make it harder</strong> when the answer came too easily.</li>
+      <li>There are no points and no winner. A passionately overthought answer is the entire point.</li>
+    </ol>
+    <p class="privacy"><strong>Private by design:</strong> this page runs fully offline. Seen and saved dilemmas stay only in this browser.</p>
+  </div>
+</div>
+
+<footer>1,104 dilemmas &middot; fully offline &middot; no accounts, tracking, or analytics</footer>
+
+<script>
+(function(){
+"use strict";
+const CATEGORY_META={
+  everyday:{name:"Everyday Tradeoffs"},
+  powers:{name:"Ridiculous Powers"},
+  disaster:{name:"Disaster Department"},
+  time:{name:"Time & Memory"},
+  social:{name:"Social Chaos"},
+  comfort:{name:"Comfort & Inconvenience"},
+  fortune:{name:"Fortune & Ambition"},
+  deep:{name:"The Deep End"}
+};
+const TONE_META={silly:"Silly",thoughtful:"Thoughtful",impossible:"Impossible"};
+const CURATED={
+everyday:[
+  ["have unlimited money","have unlimited health","thoughtful"],
+  ["always be twenty minutes early","always be ten minutes late","thoughtful"],
+  ["give up music for a year","give up television and movies for a year","thoughtful"],
+  ["eat every meal with a tiny spoon","drink every beverage through a curly straw","silly"],
+  ["have a home that cleans itself","have a car that never needs fuel or maintenance","thoughtful"],
+  ["wear slightly wet socks once a week","find one mystery crumb in your bed every night","silly"],
+  ["never wait in another line","never sit in traffic again","thoughtful"],
+  ["do all your errands before 7 a.m.","do all your errands after 10 p.m.","thoughtful"],
+  ["lose every matching food-storage lid","own only hangers that squeak","silly"],
+  ["always know what to order","always know what to wear","thoughtful"]
+],
+powers:[
+  ["fly, but only three feet above the ground","turn invisible, but only while singing","impossible"],
+  ["talk to dogs that constantly interrupt","talk to cats that refuse to answer direct questions","silly"],
+  ["teleport anywhere, but arrive soaking wet","stop time, but remain just as tired and hungry","impossible"],
+  ["read minds once a day","erase one awkward moment from anyone's memory once a week","thoughtful"],
+  ["summon any snack with a dramatic speech","change any song by sneezing twice","silly"],
+  ["have super strength only when nobody is watching","have super speed only while walking backward","impossible"],
+  ["always detect a lie","always know why someone told it","thoughtful"],
+  ["control the weather in a ten-foot circle","control every nearby light bulb with your eyebrows","silly"],
+  ["breathe underwater","never need sleep","impossible"],
+  ["heal any minor injury with a high five","fix any broken appliance by apologizing to it","silly"]
+],
+disaster:[
+  ["break your arm in a fall from a cliff","break your leg in a fall from a cliff","thoughtful"],
+  ["be snowed into a luxury hotel with no electricity","be stranded at an airport where every restaurant is open","impossible"],
+  ["escape a sinking boat in formalwear","escape a runaway golf cart in roller skates","silly"],
+  ["spend a night in a creaky lighthouse during a storm","spend a night in an empty amusement park during a fog","impossible"],
+  ["be the calm person with no plan","be the panicked person holding the correct map","thoughtful"],
+  ["have your camping food stolen by a very organized stranger","discover your tent was packed without any poles","silly"],
+  ["cross a shaky rope bridge","crawl through a perfectly safe but extremely narrow tunnel","impossible"],
+  ["be rescued first and leave everyone waiting","be rescued last after helping everyone else","thoughtful"],
+  ["face a power outage with one candle","face a water outage with one bathtub already full","thoughtful"],
+  ["give survival instructions through a kazoo","receive survival instructions from someone who only speaks in riddles","silly"]
+],
+time:[
+  ["revisit one perfect day exactly as it happened","see one ordinary day from your future","thoughtful"],
+  ["remember every conversation","forget every embarrassment","thoughtful"],
+  ["pause time for one hour each week","rewind your own life by ten seconds once a day","impossible"],
+  ["meet your ancestors","meet your descendants","thoughtful"],
+  ["live one year in the past with your current knowledge","live one year in the future with no way to return early","impossible"],
+  ["know the date of your happiest future day","know the reason it will be happy","thoughtful"],
+  ["have childhood summers feel endless again","make difficult years feel half as long","thoughtful"],
+  ["be able to redo one decision","be able to relive one surprise","thoughtful"],
+  ["age normally but look thirty","stop aging but explain it to everyone","impossible"],
+  ["receive a postcard from your future self","send one sentence to your younger self","thoughtful"]
+],
+social:[
+  ["have everyone hear your internal monologue for a day","hear everyone else's internal monologue for an hour","impossible"],
+  ["give a wedding toast with no preparation","host a three-hour party where nobody knows one another","thoughtful"],
+  ["accidentally reply all to a private complaint","call your boss by your pet's name during a meeting","silly"],
+  ["be famous for something ridiculous","be anonymous for something brilliant","thoughtful"],
+  ["attend every party in costume when nobody else is dressed up","be the only person not in costume at every party","silly"],
+  ["always know when someone dislikes you","never know when someone admires you","thoughtful"],
+  ["have to narrate every elevator ride","applaud whenever someone enters a room","silly"],
+  ["meet all your heroes at once","have all your heroes meet you before you can prepare","impossible"],
+  ["be remembered as fun but unreliable","be remembered as dependable but dull","thoughtful"],
+  ["share your most-used emoji with everyone","share your screen-time report with everyone","silly"]
+],
+comfort:[
+  ["sleep in a perfect bed in a noisy room","sleep in a terrible bed in total silence","thoughtful"],
+  ["always be slightly too warm","always be slightly too cold","thoughtful"],
+  ["give up pillows","give up pockets","silly"],
+  ["take cold showers forever","eat every meal lukewarm forever","impossible"],
+  ["have perfect shoes that squeak","have silent shoes that are always one size too small","silly"],
+  ["never feel physically tired","never feel mentally overwhelmed","thoughtful"],
+  ["live without air conditioning","live without hot water","thoughtful"],
+  ["always have a pebble in one shoe","always have one sleeve slowly sliding down","silly"],
+  ["own the world's comfiest chair but no bed","own the world's comfiest bed but no chair","impossible"],
+  ["have a personal chef","have a personal driver","thoughtful"]
+],
+fortune:[
+  ["receive ten million dollars today","receive one thousand dollars every week for life","thoughtful"],
+  ["be the best in the world at an obscure skill","be reliably good at everything you try","thoughtful"],
+  ["have your dream job with a terrible commute","have an ordinary job with a four-day weekend","thoughtful"],
+  ["win every board game and lose every argument","win every argument and lose every board game","silly"],
+  ["be rich but permanently underestimated","be respected but never financially comfortable","thoughtful"],
+  ["get credit for an idea you did not have","watch someone else get credit for your best idea","thoughtful"],
+  ["own one wildly successful business you dislike","own three modest businesses you love","thoughtful"],
+  ["know exactly how much money you will earn in life","know exactly how many people your work will help","thoughtful"],
+  ["have a gold-plated lawn mower","have a diamond-covered can opener","silly"],
+  ["retire tomorrow with just enough","work ten more years and leave a fortune","thoughtful"]
+],
+deep:[
+  ["know the complete truth about your past","know one important truth about your future","thoughtful"],
+  ["be deeply understood by one person","be widely admired by thousands","thoughtful"],
+  ["live a short life full of adventure","live a long life full of peace","thoughtful"],
+  ["always make the kind choice","always make the wise choice","thoughtful"],
+  ["know your life's purpose but be unable to achieve it","achieve your purpose without ever knowing what it was","impossible"],
+  ["be forgiven by everyone you hurt","understand everyone who hurt you","thoughtful"],
+  ["keep every memory but never make a new close friend","lose half your memories and begin a rich new chapter","impossible"],
+  ["have certainty without wonder","have wonder without certainty","thoughtful"],
+  ["be remembered accurately by a few people","become a comforting legend to many people","thoughtful"],
+  ["learn that free will is an illusion","learn that every coincidence was planned","impossible"]
+]};
+
+const PAIR_SETS={
+everyday:{left:["always get the best parking spot","never misplace your keys","have groceries appear in your kitchen","finish every chore in half the time","always pick the fastest checkout line","wake up fully rested","have every outfit fit perfectly","get a free meal every Friday","always remember names","never receive junk mail","have perfect phone battery life","find cash in every old coat","always choose the best route","have dishes wash themselves","skip every commercial","never need an appointment"],right:[
+  ["never hit a red light","thoughtful"],["never forget a password","thoughtful"],["have laundry fold itself","thoughtful"],["get an extra hour every Sunday","thoughtful"],["always have exact change","silly"],["never step on a wet bathroom floor","silly"],["have every avocado be perfectly ripe","silly"],["never hear hold music again","silly"]]},
+powers:{left:["teleport to any grocery store","turn invisible during awkward conversations","speak every language in song","summon a chair anywhere","control one traffic light per day","read the mind of anyone wearing a hat","shrink to six inches tall for an hour","make any room smell like cookies","freeze one object in time","communicate with household appliances","walk through one wall per week","change your hair color by blinking","levitate anything lighter than a sandwich","predict the next song on shuffle","make plants grow by complimenting them","swap places with your reflection"],right:[
+  ["fly only while holding an umbrella","impossible"],["breathe underwater but only in swimming pools","impossible"],["run at super speed in flip-flops","silly"],["command every squirrel within fifty feet","silly"],["hear colors and see sounds","impossible"],["know exactly when toast will pop","silly"],["make one person laugh on command","silly"],["pause time during one daily chore","thoughtful"]]},
+disaster:{left:["be stuck in an elevator with a magician","weather a blizzard in a bowling alley","lose your map on a marked hiking trail","spend a stormy night in a tree house","be stranded on a tiny island with a librarian","escape a corn maze after dark","cross a flooded street in formal shoes","wait out a tornado warning in a gift shop","survive a road trip with no air conditioning","be locked overnight in a museum","navigate a citywide blackout","miss the last train in a town you do not know","have a flat tire in perfect weather","camp through three days of rain","be trapped in a ski lodge with no skis","take charge during a very minor shipwreck"],right:[
+  ["be stuck on a Ferris wheel with a mime","silly"],["weather a heat wave in an ice rink","impossible"],["lose your flashlight in a safe cave tour","impossible"],["spend a foggy night in an empty diner","impossible"],["be stranded at a rest stop with a chef","silly"],["escape an office building during a fire drill","silly"],["cross a muddy field in brand-new shoes","silly"],["give directions while everyone ignores you","thoughtful"]]},
+time:{left:["repeat your favorite birthday","visit your hometown fifty years ago","pause one perfect sunset","remember your first day of school clearly","meet yourself at age eighty","revisit one family holiday","watch one historical mystery unfold","send your past self a photograph","live one month without clocks","recover one forgotten memory","see your home one hundred years from now","ask your future self one question","keep one day from ending","repeat one ordinary childhood afternoon","know what you were doing exactly ten years ago","experience one decade in a single week"],right:[
+  ["skip ahead to your next great surprise","thoughtful"],["visit your hometown fifty years from now","thoughtful"],["rewind one terrible morning","thoughtful"],["forget your most awkward school day","thoughtful"],["meet yourself at age ten","thoughtful"],["see how strangers remember you","impossible"],["receive one object from the future","impossible"],["lose all sense of what year it is","silly"]]},
+social:{left:["host dinner for twelve strangers","sing karaoke for your coworkers","wear a name tag listing your worst habit","let your family choose your haircut","give a speech at a surprise event","share a hotel room with your loudest friend","attend a reunion where nobody has aged","have your neighbors review your music taste","be seated beside your childhood rival","explain your job to a room of five-year-olds","let a stranger plan your birthday","show everyone your last ten photos","meet your favorite celebrity at the laundromat","be the only sober person at a wild party","have every joke receive a written score","trade phones with a friend for one hour"],right:[
+  ["attend dinner where everyone already knows your secrets","impossible"],["perform improv for your family","silly"],["wear a shirt displaying your screen time","silly"],["let your coworkers choose your ringtone","silly"],["give a toast at a stranger's wedding","impossible"],["share a road trip with your quietest acquaintance","thoughtful"],["attend a reunion where only you have aged","impossible"],["have your friends review your cooking","thoughtful"]]},
+comfort:{left:["sleep with a fan blowing directly at you","wear pajamas to every formal event","eat only crunchy foods for a month","live in a home with no interior doors","have one perfectly warm hand","use a blanket that is always too short","sit in the middle seat on every flight","wear shoes that are always damp","take every call on speakerphone","sleep on a couch with perfect pillows","live where it rains every afternoon","have a bathroom with no mirror","drink every beverage at room temperature","wear the same comfortable outfit daily","work from an office with no windows","have a bedroom that is always bright"],right:[
+  ["sleep with one foot outside the blanket","silly"],["wear formal clothes every Sunday at home","silly"],["eat only soft foods for a month","silly"],["live in a home with no closets","thoughtful"],["have two hands that are always slightly cold","silly"],["use a pillow that is always too warm","silly"],["stand for every short train ride","thoughtful"],["have a living room that is always dim","thoughtful"]]},
+fortune:{left:["earn a fortune doing anonymous work","run a beloved neighborhood business","become famous at age seventy","invent a product everyone uses","have one idea worth millions","work only on projects you love","own five small homes around the world","receive a surprise inheritance","become the expert everyone calls","retire before your friends","have a job with total freedom","publish one timeless book","lead a company that treats people well","fund every friend's best idea","win a modest prize every year","have your name on a major building"],right:[
+  ["earn enough doing work everyone recognizes","thoughtful"],["run a huge business nobody loves","thoughtful"],["be quietly influential from age twenty","thoughtful"],["perfect a product everyone overlooks","thoughtful"],["have one hundred dependable small ideas","thoughtful"],["make twice as much on projects you tolerate","thoughtful"],["own one perfect home near everyone you love","thoughtful"],["earn the same amount through years of work","thoughtful"]]},
+deep:{left:["know exactly who you are","understand every choice you have made","be loved for your potential","always notice life's important moments","have one unshakable belief","know that your work mattered","live without regret","be remembered by your family","always recognize the truth","find meaning in every hardship","know when to leave","be capable of forgiving anyone","have a life full of answers","change one person's whole life","feel completely at home somewhere","understand why you are here"],right:[
+  ["know exactly where you belong","thoughtful"],["understand every choice others made","thoughtful"],["be loved for who you are now","thoughtful"],["fully appreciate them only afterward","thoughtful"],["remain open to changing every belief","thoughtful"],["know that your kindness mattered","thoughtful"],["live without wondering what might have been","thoughtful"],["be understood by strangers long after you are gone","impossible"]]}
+};
+
+const deck=[];
+Object.keys(CATEGORY_META).forEach(category=>{
+  CURATED[category].forEach((item,index)=>deck.push({id:"c-"+category+"-"+index,category,a:item[0],b:item[1],tone:item[2],curated:true}));
+  const pairs=PAIR_SETS[category];pairs.left.forEach((a,leftIndex)=>pairs.right.forEach((right,rightIndex)=>deck.push({id:"g-"+category+"-"+leftIndex+"-"+rightIndex,category,a,b:right[0],tone:right[1],curated:false})));
+});
+
+const COMPLICATIONS=[
+  "Everyone you know will learn which option you chose.","The choice lasts for exactly ten years.","You cannot explain your choice to anyone.","Your closest friend must take the opposite option.","It begins tomorrow morning and you get five minutes to prepare.","One random day each month, the choice reverses.","You must make the decision publicly.","You receive no credit for choosing the difficult option.","The choice also applies to every vacation you take.","You must convince one skeptical relative that this was wise.","There is no trial period and no undo button.","The consequences begin at the least convenient possible moment.","You must keep a daily journal about the experience.","A documentary crew follows you for the first week.","You have to repeat the choice every five years.","Nobody believes that you chose voluntarily.","The option you reject goes to your best friend.","You can tell only one person before it begins.","The decision becomes part of your permanent biography.","You must give up your favorite snack as an unrelated processing fee.","You get one phone call for advice, but must do the opposite.","Your twelve-year-old self gets to judge your answer.","You must announce the decision through a song.","The fine print is read aloud by your most dramatic friend."
+];
+const SAME_PROMPTS=["Make the best case for the option neither of you chose.","What kind of person would confidently choose the other option?","Name the one detail that could make both of you switch.","Which of you would handle your shared choice better, and why?","Invent the worst unexpected consequence of your choice."];
+const SPLIT_PROMPTS=["You each get one uninterrupted sentence to change the other person's mind.","Name the hidden downside in the other person's choice.","What single new fact would make you switch sides?","Argue why your choice is secretly more generous.","Predict what happens one week after each of you gets your choice."];
+const $=id=>document.getElementById(id);
+const SEEN_KEY="wouldRatherSeenV1",SAVED_KEY="wouldRatherSavedV1",SETTINGS_KEY="wouldRatherSettingsV1";
+let seen=new Set(readLocal(SEEN_KEY,[])),saved=readLocal(SAVED_KEY,[]),settings=readLocal(SETTINGS_KEY,{tone:"all",categories:Object.keys(CATEGORY_META)}),current=null,lastComplication="",pendingTone=settings.tone,resetArmed=false;
+
+function readLocal(key,fallback){try{const value=JSON.parse(localStorage.getItem(key));return value===null?fallback:value;}catch(error){return fallback;}}
+function writeLocal(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch(error){}}
+function randomItem(items){return items[(Math.random()*items.length)|0];}
+function eligible(item){return settings.categories.includes(item.category)&&(settings.tone==="all"||item.tone===settings.tone);}
+function fullQuestion(item){return "Would you rather "+item.a+" or "+item.b+"?";}
+
+function drawCard(specific){
+  if(specific){current=specific;}else{
+    let available=deck.filter(item=>eligible(item)&&!seen.has(item.id));
+    if(!available.length){deck.filter(eligible).forEach(item=>seen.delete(item.id));available=deck.filter(eligible);}
+    const curated=available.filter(item=>item.curated),generated=available.filter(item=>!item.curated);
+    current=randomItem(curated.length&&Math.random()<.68?curated:generated.length?generated:curated);
+    seen.add(current.id);writeLocal(SEEN_KEY,Array.from(seen));
+  }
+  $("optionA").textContent=current.a;$("optionB").textContent=current.b;$("categoryBadge").textContent=CATEGORY_META[current.category].name;
+  $("cardNumber").textContent="Dilemma "+String(seen.size).padStart(3,"0")+" / "+deck.length;
+  $("complication").hidden=true;$("harderBtn").textContent="Make it harder";lastComplication="";
+  $("choicePanel").hidden=false;$("verdict").hidden=true;syncSaveButton();
+  const board=$("decisionBoard");board.classList.remove("changing");void board.offsetWidth;board.classList.add("changing");
+}
+function syncSaveButton(){const isSaved=current&&saved.some(item=>item.id===current.id);$("saveCard").setAttribute("aria-pressed",String(isSaved));$("saveCard").textContent=isSaved?"Saved":"Save dilemma";}
+$("saveCard").addEventListener("click",()=>{const exists=saved.some(item=>item.id===current.id);saved=exists?saved.filter(item=>item.id!==current.id):[{id:current.id,category:current.category,tone:current.tone,a:current.a,b:current.b},...saved];writeLocal(SAVED_KEY,saved);syncSavedCount();syncSaveButton();});
+$("harderBtn").addEventListener("click",()=>{let next=randomItem(COMPLICATIONS);while(COMPLICATIONS.length>1&&next===lastComplication)next=randomItem(COMPLICATIONS);lastComplication=next;$("complicationText").textContent=next;$("complication").hidden=false;$("harderBtn").textContent="Another complication";});
+function resolveChoice(type){const same=type==="same";$("verdictLabel").textContent=same?"Unanimous, suspiciously":"A house divided";$("discussionPrompt").textContent=randomItem(same?SAME_PROMPTS:SPLIT_PROMPTS);$("discussionNudge").textContent=same?"Agreement is only the beginning. Test how solid it really is.":"No filibusters. Listen first, then make the strongest case you can.";$("choicePanel").hidden=true;$("verdict").hidden=false;}
+$("sameChoice").addEventListener("click",()=>resolveChoice("same"));$("splitChoice").addEventListener("click",()=>resolveChoice("split"));$("nextCard").addEventListener("click",()=>drawCard());
+
+function buildCategories(){const grid=$("categoryGrid");Object.keys(CATEGORY_META).forEach(key=>{const label=document.createElement("label");label.className="categoryToggle";const input=document.createElement("input");input.type="checkbox";input.value=key;input.checked=settings.categories.includes(key);const span=document.createElement("span");span.textContent=CATEGORY_META[key].name;label.append(input,span);grid.appendChild(label);});grid.addEventListener("change",event=>{if(!selectedCategories().length)event.target.checked=true;});}
+function selectedCategories(){return Array.from(document.querySelectorAll("#categoryGrid input:checked")).map(input=>input.value);}
+function syncTone(){document.querySelectorAll("#toneControl .segment").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.tone===pendingTone)));}
+function syncSettingsForm(){pendingTone=settings.tone;syncTone();document.querySelectorAll("#categoryGrid input").forEach(input=>input.checked=settings.categories.includes(input.value));}
+$("toneControl").addEventListener("click",event=>{const button=event.target.closest(".segment");if(!button)return;pendingTone=button.dataset.tone;syncTone();});
+$("applySettings").addEventListener("click",()=>{settings.tone=pendingTone;settings.categories=selectedCategories();writeLocal(SETTINGS_KEY,settings);closeModal($("settingsModal"),$("settingsBtn"));drawCard();});
+$("resetSeen").addEventListener("click",()=>{if(!resetArmed){resetArmed=true;$("resetSeen").textContent="Tap again to confirm";return;}seen.clear();writeLocal(SEEN_KEY,[]);resetArmed=false;$("resetSeen").textContent="Seen dilemmas reset";});
+
+function syncSavedCount(){$("savedCount").textContent=saved.length;}
+function renderSaved(){const query=$("savedSearch").value.trim().toLowerCase(),matches=saved.filter(item=>!query||(fullQuestion(item)+" "+CATEGORY_META[item.category].name).toLowerCase().includes(query)),list=$("savedList");list.replaceChildren();if(!matches.length){const empty=document.createElement("p");empty.className="empty";empty.textContent=saved.length?"No saved dilemmas match that search.":"No saved dilemmas yet. Keep the choices worth arguing about again.";list.appendChild(empty);return;}matches.forEach(item=>{const article=document.createElement("article");article.className="savedItem";const meta=document.createElement("div");meta.className="savedMeta";const category=document.createElement("span");category.textContent=CATEGORY_META[item.category].name;const tone=document.createElement("span");tone.textContent=TONE_META[item.tone];meta.append(category,tone);const question=document.createElement("p");question.className="savedQuestion";question.textContent=fullQuestion(item);const actions=document.createElement("div");actions.className="savedActions";const revisit=document.createElement("button");revisit.className="btn quiet";revisit.textContent="Revisit";revisit.dataset.revisit=item.id;const remove=document.createElement("button");remove.className="btn quiet";remove.textContent="Remove";remove.dataset.remove=item.id;actions.append(revisit,remove);article.append(meta,question,actions);list.appendChild(article);});}
+$("savedList").addEventListener("click",event=>{const revisit=event.target.closest("[data-revisit]"),remove=event.target.closest("[data-remove]");if(revisit){const item=deck.find(card=>card.id===revisit.dataset.revisit);if(item){closeModal($("savedModal"),$("savedBtn"));drawCard(item);}return;}if(remove){saved=saved.filter(item=>item.id!==remove.dataset.remove);writeLocal(SAVED_KEY,saved);syncSavedCount();syncSaveButton();renderSaved();}});$("savedSearch").addEventListener("input",renderSaved);
+function openModal(modal,focusTarget){modal.hidden=false;focusTarget.focus();}function closeModal(modal,returnFocus){modal.hidden=true;returnFocus.focus();}
+$("settingsBtn").addEventListener("click",()=>{resetArmed=false;$("resetSeen").textContent="Reset seen dilemmas";syncSettingsForm();openModal($("settingsModal"),$("closeSettings"));});$("closeSettings").addEventListener("click",()=>closeModal($("settingsModal"),$("settingsBtn")));
+$("savedBtn").addEventListener("click",()=>{$("savedSearch").value="";renderSaved();openModal($("savedModal"),$("savedSearch"));});$("closeSaved").addEventListener("click",()=>closeModal($("savedModal"),$("savedBtn")));$("doneSaved").addEventListener("click",()=>closeModal($("savedModal"),$("savedBtn")));
+$("helpBtn").addEventListener("click",()=>openModal($("rulesModal"),$("closeRules")));$("closeRules").addEventListener("click",()=>closeModal($("rulesModal"),$("helpBtn")));
+[$("settingsModal"),$("savedModal"),$("rulesModal")].forEach(modal=>modal.addEventListener("click",event=>{if(event.target!==modal)return;const focus=modal===$("settingsModal")?$("settingsBtn"):modal===$("savedModal")?$("savedBtn"):$("helpBtn");closeModal(modal,focus);}));
+document.addEventListener("keydown",event=>{if(event.key!=="Escape")return;if(!$("settingsModal").hidden)closeModal($("settingsModal"),$("settingsBtn"));else if(!$("savedModal").hidden)closeModal($("savedModal"),$("savedBtn"));else if(!$("rulesModal").hidden)closeModal($("rulesModal"),$("helpBtn"));});
+buildCategories();syncTone();syncSavedCount();drawCard();
+})();
+</script>
+</body>
+</html>

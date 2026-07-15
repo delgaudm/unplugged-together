@@ -8,7 +8,7 @@ Offline multiplayer games for face-to-face fun. No accounts, ads, tracking, or a
 
 [![Unplugged Together launcher](screenshots/launcher.jpg)](https://delgaudm.github.io/unplugged-together/)
 
-Choose a game and start playing. On a phone, use **Install App** or **Add to Home Screen** from the browser menu. Visit the launcher once while online and all seven games are cached for later use without a connection.
+Choose a game and start playing. On a phone, use **Install App** or **Add to Home Screen** from the browser menu. Visit the launcher once while online and all eight games are cached for later use without a connection.
 
 The games are ordinary web pages, so there is nothing to buy and no app-store account is required. Clearing browser storage can remove the offline copy; reconnecting and opening the launcher restores it.
 
@@ -58,11 +58,14 @@ The games are ordinary web pages, so there is nothing to buy and no app-store ac
       <p>Skip the small talk with 1,184 funny, revealing, nostalgic, and mildly existential questions.</p>
     </td>
     <td width="50%">
-      <h3>Private by design</h3>
-      <p>Every game runs entirely on the device. Saved cards and Case Law remain in that browser. Nothing is sent to a server.</p>
+      <h3><a href="would-you-rather/would-you-rather.html">Would You Rather?</a></h3>
+      <a href="would-you-rather/would-you-rather.html"><img src="screenshots/would-you-rather.jpg" alt="Would You Rather gameplay" width="520"></a>
+      <p>Make a forced choice from 1,104 dilemmas, then defend it when the game makes the decision harder.</p>
     </td>
   </tr>
 </table>
+
+Every game runs entirely on the device. Saved cards, seen-card history, and Case Law remain in that browser. Nothing is sent to a server.
 
 ## How Offline Play Works
 
