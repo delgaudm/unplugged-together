@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Same Page</title>
+<style>
+  :root{
+    --felt:#1b2a2e; --felt-hi:#28414a;
+    --bone:#f2ead8; --bone-dim:#d6cbb2;
+    --ink:#241d16; --brass:#c9a24a; --glass:#9fd4e2;
+    --danger:#d96a4a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(120% 90% at 50% 8%, var(--felt-hi) 0%, var(--felt) 55%, #0d1618 100%);
+    color:var(--bone-dim);
+    font-family:ui-sans-serif,"Helvetica Neue",Arial,sans-serif;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:22px;padding:22px;
+  }
+  header{letter-spacing:.34em;text-transform:uppercase;font-size:11px;font-weight:600;color:#8aa0a4}
+  footer{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#5c6e73;text-align:center}
+
+  button{
+    font:inherit;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+    color:#12211f;background:var(--brass);border:0;border-radius:999px;padding:13px 30px;
+    cursor:pointer;box-shadow:0 6px 0 #8a6c2a,0 12px 22px rgba(0,0,0,.45);
+    transition:transform .08s ease,box-shadow .08s ease,background .12s ease,color .12s ease,border-color .12s ease;
+  }
+  button:active{transform:translateY(4px);box-shadow:0 2px 0 #8a6c2a,0 6px 12px rgba(0,0,0,.45)}
+  button:disabled{opacity:.4;cursor:default}
+  button:focus-visible{outline:3px solid var(--glass);outline-offset:3px}
+  button.quiet{
+    background:transparent;color:#8aa0a4;box-shadow:none;
+    border:1px solid rgba(138,160,164,.45);padding:8px 16px;font-size:10px;
+  }
+  button.quiet:hover{color:var(--bone-dim);border-color:var(--bone-dim)}
+  button.quiet:active{transform:none}
+
+  #help{position:fixed;top:16px;right:16px;z-index:5}
+
+  .screen{display:none;flex-direction:column;align-items:center;gap:22px;width:100%;max-width:600px}
+  .screen.on{display:flex}
+  .lead{font-size:15px;line-height:1.55;text-align:center;max-width:440px}
+  .eyebrow{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#8aa0a4}
+
+  .modeRow{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;max-width:520px;
+    padding:5px;border:1px solid rgba(159,212,226,.16);border-radius:999px;background:rgba(255,255,255,.04);
+  }
+  .modeRow button{
+    min-height:42px;padding:0 10px;border-radius:999px;box-shadow:none;background:transparent;
+    color:#8aa0a4;border:1px solid transparent;font-size:10px;letter-spacing:.14em;
+  }
+  .modeRow button.on{background:var(--brass);color:#12211f;border-color:rgba(255,255,255,.18)}
+  .modeRow button:active{transform:none;box-shadow:none}
+
+  .modeNote{
+    min-height:3.4em;display:flex;align-items:center;justify-content:center;
+    color:#93a6aa;font-size:13px;line-height:1.45;text-align:center;max-width:470px;
+  }
+
+  .steppers{display:flex;gap:26px;flex-wrap:wrap;justify-content:center}
+  .stepper{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .stepper .row{display:flex;align-items:center;gap:14px}
+  .stepper .val{font-family:ui-monospace,Menlo,monospace;font-size:34px;font-weight:700;
+                color:var(--bone);min-width:2.6ch;text-align:center}
+  .stepper button{padding:0;width:44px;height:44px;border-radius:50%;font-size:20px;letter-spacing:0}
+
+  .topRow{display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap}
+  #roundBadge{
+    min-width:118px;padding:10px 14px;border-radius:8px;text-align:center;
+    background:rgba(255,255,255,.05);border:1px solid rgba(159,212,226,.14);
+    color:var(--bone-dim);font-family:ui-monospace,Menlo,monospace;font-size:13px;
+  }
+  #timerWrap{position:relative;width:96px;height:96px}
+  #timerWrap svg{transform:rotate(-90deg)}
+  #timerWrap .track{fill:none;stroke:rgba(255,255,255,.10);stroke-width:7}
+  #timerWrap .left{fill:none;stroke:var(--brass);stroke-width:7;stroke-linecap:round;
+                   stroke-dasharray:1;stroke-dashoffset:0;transition:stroke .4s}
+  #timerWrap.late .left{stroke:var(--danger)}
+  #clock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+         font-family:ui-monospace,Menlo,monospace;font-size:22px;font-weight:700;color:var(--bone-dim)}
+  #timerWrap.late #clock{color:#e8917a}
+
+  #promptCard{
+    width:min(560px,92vw);min-height:210px;border-radius:16px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px;
+    background:linear-gradient(150deg,var(--bone) 0%,#e2d7bd 100%);
+    box-shadow:inset 0 0 0 1px rgba(90,70,40,.35),inset 0 -9px 14px rgba(120,95,55,.22),
+               0 20px 45px rgba(0,0,0,.5);
+    color:var(--ink);padding:28px 30px;
+    transition:filter .9s ease,opacity .9s ease;
+  }
+  #promptType{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#7a6a4a}
+  #promptText{font-family:Helvetica,"Helvetica Neue",Arial,sans-serif;font-weight:700;
+              font-size:clamp(26px,7vw,42px);line-height:1.12}
+  #promptText .blank{white-space:nowrap;color:#7c6330}
+  #play.dimmed #promptCard{filter:grayscale(.45) brightness(.72)}
+
+  #scoreCard{
+    width:min(560px,92vw);display:grid;gap:8px;padding:13px 16px;border-radius:8px;
+    background:rgba(255,255,255,.05);border:1px solid rgba(159,212,226,.14);
+    color:#93a6aa;font-size:13px;line-height:1.45;text-align:center;
+  }
+  #scoreTitle{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--brass)}
+  #playMsg{min-height:1.4em;font-size:13px;color:#93a6aa;text-align:center}
+  .btnRow{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+
+  #rules{
+    position:fixed;inset:0;z-index:10;background:rgba(9,16,18,.82);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  #rules[hidden]{display:none}
+  #rulesCard{
+    max-width:500px;max-height:88vh;overflow:auto;
+    background:linear-gradient(170deg,#22363c,#17262b);
+    border:1px solid rgba(159,212,226,.22);border-radius:14px;
+    padding:30px 32px;color:var(--bone-dim);box-shadow:0 30px 60px rgba(0,0,0,.6);
+  }
+  #rulesCard h2{font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:var(--brass);margin-bottom:18px}
+  #rulesCard ol{padding-left:20px;display:grid;gap:12px;font-size:14.5px;line-height:1.55}
+  #rulesCard .fine{margin-top:14px;font-size:12.5px;line-height:1.5;color:#93a6aa}
+  #rulesCard .promise{color:var(--glass)}
+  #closeRules{margin-top:20px;width:100%}
+
+  @media (max-width:480px){
+    body{gap:18px;padding:18px}
+    .modeRow{border-radius:16px;grid-template-columns:1fr}
+    .modeRow button{height:38px}
+    #promptCard{min-height:190px;padding:24px 22px}
+  }
+</style>
+</head>
+<body>
+
+<header>Same&nbsp;Page</header>
+<button id="help" class="quiet" aria-haspopup="dialog">How to play</button>
+
+<div id="rules" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" hidden>
+  <div id="rulesCard">
+    <h2 id="rulesTitle">How to play</h2>
+    <ol>
+      <li>Everyone gets paper and a pencil. Choose a scoring mode, tap <strong>Deal a prompt</strong>, and set the phone in the middle.</li>
+      <li>Each player secretly writes one answer that completes the prompt. No conferring, hinting, or campaigning.</li>
+      <li>When time runs out, reveal answers together. The table decides which answers are close enough to count as the same idea.</li>
+      <li>Score the round using the mode shown on the screen, then deal the next prompt.</li>
+      <li>Highest score after the final round wins. Ties are settled by one sudden-death prompt.</li>
+    </ol>
+    <p class="fine">For close calls, be generous with wording and strict with ideas. "A ghost" and "ghost" match; "monster" probably does not.</p>
+    <p class="fine promise">This page runs entirely on your device. No internet needed, no cookies, no storage, no tracking, no analytics - just pure fun.</p>
+    <button id="closeRules">Back to the game</button>
+  </div>
+</div>
+
+<section id="setup" class="screen on">
+  <p class="lead">Write the answer you think the room will write. Match minds, split points, and discover who is operating on the same strange wavelength.</p>
+
+  <div class="modeRow" role="group" aria-label="scoring mode">
+    <button id="modeSame" class="on" data-mode="same">Same Page</button>
+    <button id="modePair" data-mode="pair">Perfect Pair</button>
+    <button id="modeOdd" data-mode="odd">Odd Duck</button>
+  </div>
+  <p id="modeNote" class="modeNote"></p>
+
+  <div class="steppers">
+    <div class="stepper">
+      <span class="eyebrow">Players</span>
+      <div class="row">
+        <button id="pMinus" aria-label="fewer players">-</button>
+        <span class="val" id="pCount">5</span>
+        <button id="pPlus" aria-label="more players">+</button>
+      </div>
+    </div>
+    <div class="stepper">
+      <span class="eyebrow">Seconds</span>
+      <div class="row">
+        <button id="sMinus" aria-label="shorter timer">-</button>
+        <span class="val" id="sCount">45</span>
+        <button id="sPlus" aria-label="longer timer">+</button>
+      </div>
+    </div>
+    <div class="stepper">
+      <span class="eyebrow">Rounds</span>
+      <div class="row">
+        <button id="rMinus" aria-label="fewer rounds">-</button>
+        <span class="val" id="rCount">7</span>
+        <button id="rPlus" aria-label="more rounds">+</button>
+      </div>
+    </div>
+  </div>
+  <button id="deal">Deal a prompt</button>
+</section>
+
+<section id="play" class="screen">
+  <div class="topRow">
+    <div id="roundBadge">Round 1 / 7</div>
+    <div id="timerWrap">
+      <svg viewBox="0 0 96 96" width="96" height="96" aria-hidden="true">
+        <circle class="track" cx="48" cy="48" r="40"/>
+        <circle class="left"  cx="48" cy="48" r="40" pathLength="1"/>
+      </svg>
+      <span id="clock">0:45</span>
+    </div>
+  </div>
+
+  <div id="promptCard">
+    <span id="promptType">Finish this</span>
+    <div id="promptText"></div>
+  </div>
+
+  <div id="scoreCard">
+    <span id="scoreTitle">Scoring</span>
+    <span id="scoreRule"></span>
+  </div>
+
+  <p id="playMsg">Write one answer. Keep it secret.</p>
+  <div class="btnRow">
+    <button id="next">Next prompt</button>
+    <button id="setupBtn" class="quiet">Change setup</button>
+  </div>
+</section>
+
+<footer>Plays fully offline &nbsp;·&nbsp; no cookies, no storage, no tracking, no analytics</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- content ---------------- */
+const PROMPTS=[
+"A terrible password would be _____.",
+"The worst thing to find in your soup is _____.",
+"A dragon's day job would be _____.",
+"The least useful thing to bring camping is _____.",
+"A haunted refrigerator is full of _____.",
+"The most suspicious thing to whisper is _____.",
+"An alien's favorite souvenir from Earth is _____.",
+"The worst pizza topping is _____.",
+"A wizard would keep _____ in a junk drawer.",
+"The first rule of being a pirate is never _____.",
+"A robot's secret hobby is _____.",
+"The worst thing to name a boat is _____.",
+"A tiny trophy should be awarded for _____.",
+"The least magical magic word is _____.",
+"A villain's most embarrassing weakness is _____.",
+"The weirdest thing to keep in a glove box is _____.",
+"A dog would probably invent _____ if it could.",
+"The worst place to hide a birthday present is _____.",
+"A ghost's favorite chore is _____.",
+"The official smell of summer should be _____.",
+"A suspicious thing to hear from the basement is _____.",
+"The least helpful fortune cookie says _____.",
+"The best name for a neighborhood squirrel is _____.",
+"A castle really needs more _____.",
+"The worst thing to bring to show-and-tell is _____.",
+"A superhero with a boring power can _____.",
+"The first item banned from a moon colony would be _____.",
+"A museum of bad ideas would display _____.",
+"The most dramatic sandwich ingredient is _____.",
+"A mermaid's least favorite household item is _____.",
+"The best excuse for being late is _____.",
+"The worst prize in a cereal box is _____.",
+"A spy should never carry _____.",
+"The strangest thing to find under a couch is _____.",
+"The least popular parade float would be shaped like _____.",
+"A pirate's email sign-off would be _____.",
+"The first thing a talking house would complain about is _____.",
+"A very fancy hamster would demand _____.",
+"The worst flavor of toothpaste is _____.",
+"A time traveler should never forget _____.",
+"The most suspicious ice cream flavor is _____.",
+"A secret society for kids would meet inside _____.",
+"The worst thing to hear from your backpack is _____.",
+"A fairy godparent's backup wand is actually _____.",
+"The least impressive world record is _____.",
+"A monster trying to seem friendly would offer _____.",
+"The official sport of lazy people is _____.",
+"The worst thing to bring into a library is _____.",
+"A detective's favorite snack is _____.",
+"The first thing a snowman buys online is _____.",
+"A racetrack for snails would need _____.",
+"The most confusing button on a spaceship says _____.",
+"A magician's shopping list includes _____.",
+"The worst school field trip would visit _____.",
+"A very polite zombie would ask for _____.",
+"The official bird of bad luck is _____.",
+"A suitcase packed by a toddler contains _____.",
+"The worst thing to step on barefoot is _____.",
+"A cowboy's least favorite chore is _____.",
+"The moon is secretly made of _____.",
+"A dragon keeps sneezing because of _____.",
+"The best thing to yell while sledding is _____.",
+"A haunted phone only autocorrects words to _____.",
+"The most useless kitchen gadget is for _____.",
+"A pirate's favorite board game is _____.",
+"The worst thing to discover in a sleeping bag is _____.",
+"A llama would become famous for _____.",
+"The strangest thing to sell from a food truck is _____.",
+"The best name for a tiny planet is _____.",
+"A wizard's least popular spell turns everything into _____.",
+"The worst thing to wear to a water park is _____.",
+"A detective should never trust someone holding _____.",
+"The most dramatic thing in a junk drawer is _____.",
+"A robot's lullaby is about _____.",
+"The worst thing to find in your shoe is _____.",
+"A pirate's greatest treasure is actually _____.",
+"The least scary haunted house room is _____.",
+"A superhero's secret lunch order is _____.",
+"The weirdest thing to borrow from a neighbor is _____.",
+"A dragon's favorite board game piece is _____.",
+"The worst thing for a marching band to carry is _____.",
+"A penguin's dream vacation is _____.",
+"The strangest thing to put on a resume is _____.",
+"A talking tree would gossip about _____.",
+"The world's most boring theme park ride is _____.",
+"The first law passed by cats would ban _____.",
+"A suspicious thing to keep in a freezer is _____.",
+"The worst thing to hear from a fortune teller is _____.",
+"A wizard's garage sale would definitely include _____.",
+"The most useless app would help you _____.",
+"A detective's least favorite clue is _____.",
+"The best thing to find in a treasure chest is _____.",
+"A monster's favorite bedtime story is about _____.",
+"The worst thing to forget on a road trip is _____.",
+"A haunted vending machine only sells _____.",
+"The official sound of Monday morning is _____.",
+"A space alien would be most confused by _____.",
+"The best secret handshake includes _____.",
+"A royal pet would be named _____.",
+"The worst thing to bring to a picnic is _____.",
+"The worst thing to hear from a suitcase is _____.",
+"A tiny door in the kitchen probably leads to _____.",
+"The best name for a garage band is _____.",
+"A suspicious thing to find in a lunchbox is _____.",
+"The most dramatic vegetable is _____.",
+"A wizard's calendar is full of reminders to _____.",
+"The first thing banned at a pillow fort would be _____.",
+"A very nervous knight would be scared of _____.",
+"The worst flavor of birthday cake is _____.",
+"A secret button under the table probably does _____.",
+"The official snack of rainy days is _____.",
+"A robot trying to blend in would say _____.",
+"The strangest thing to hear from a closet is _____.",
+"A pirate's least favorite restaurant is _____.",
+"The most suspicious thing to bring to a sleepover is _____.",
+"A museum gift shop should never sell _____.",
+"The best thing to shout before jumping into a pool is _____.",
+"A dragon's favorite breakfast is _____.",
+"The least useful tool in a toolbox is _____.",
+"A haunted elevator always stops at _____.",
+"The official color of trouble should be _____.",
+"A very fancy sandwich needs _____.",
+"The worst thing to find in a cereal bowl is _____.",
+"A detective's ringtone would sound like _____.",
+"The first rule of a secret clubhouse is _____.",
+"A wizard's least favorite weather is _____.",
+"The most confusing thing to label as fragile is _____.",
+"A space captain should never press the button marked _____.",
+"The best name for a tiny bakery is _____.",
+"A mysterious package on the porch contains _____.",
+"The worst place to take a nap is _____.",
+"A talking mirror would mostly complain about _____.",
+"The least helpful map points to _____.",
+"A parade for breakfast foods would be led by _____.",
+"The strangest thing to keep in a trophy case is _____.",
+"A magician's worst mistake is pulling out _____.",
+"The official smell of a school bus is _____.",
+"A friendly ghost would leave notes that say _____.",
+"The worst thing to hear during a haircut is _____.",
+"A superhero's least impressive weakness is _____.",
+"The most suspicious thing in a hotel room is _____.",
+"A treasure map should never be drawn on _____.",
+"The best thing to find in a coat pocket is _____.",
+"A wizard's favorite board game rule is _____.",
+"The worst thing to pack for the beach is _____.",
+"A robot's favorite holiday tradition is _____.",
+"The most dramatic way to leave a room is _____.",
+"A secret cave should definitely have _____.",
+"The least convincing disguise is _____.",
+"A tiny king would declare war on _____.",
+"The worst thing to say into a microphone is _____.",
+"A dragon's least favorite chore is _____.",
+"The official dessert of bad decisions is _____.",
+"A spaceship's cup holder is designed for _____.",
+"The strangest item on a restaurant menu is _____.",
+"A detective's notebook is mostly full of _____.",
+"The best name for a haunted toaster is _____.",
+"The least exciting treasure is _____.",
+"A wizard's emergency kit contains _____.",
+"The worst thing to hear from a vending machine is _____.",
+"A fancy hotel for ants would offer _____.",
+"The official sport of sleepy people is _____.",
+"A castle's worst room is the _____.",
+"The most suspicious thing to write on a sticky note is _____.",
+"A superhero's backup vehicle is _____.",
+"The worst thing to find in a mailbox is _____.",
+"A dragon's favorite dance move is _____.",
+"The least useful thing to learn in school is _____.",
+"A mysterious hallway should end at _____.",
+"The best name for a neighborhood detective is _____.",
+"A pirate's most prized kitchen appliance is _____.",
+"The worst thing to hear on a walkie-talkie is _____.",
+"A robot's first painting would be of _____.",
+"The official sandwich of winter is _____.",
+"A wizard's least favorite store is _____.",
+"The strangest thing to bring to a talent show is _____.",
+"A very dramatic cloud looks exactly like _____.",
+"The worst place to lose a tooth is _____.",
+"A secret agent's lunch is always _____.",
+"The best thing to hide inside a cake is _____.",
+"A haunted backpack is full of _____.",
+"The least useful warning sign says _____.",
+"A dragon's favorite thing to collect is _____.",
+"The most suspicious thing to keep in a bathroom cabinet is _____.",
+"A tiny spaceship would run on _____.",
+"The worst thing to find in a sleeping bag zipper is _____.",
+"A wizard's favorite pizza topping is _____.",
+"The best name for a tiny detective agency is _____.",
+"A pirate would never admit liking _____.",
+"The official noise of a bad idea is _____.",
+"A robot's least favorite chore is _____.",
+"The most confusing thing to receive as a gift is _____.",
+"A haunted microwave only heats _____.",
+"The worst thing to hear from behind a curtain is _____.",
+"A superhero's most boring gadget is _____.",
+"The best excuse for messy handwriting is _____.",
+"A castle's secret passage leads to _____.",
+"The least helpful thing in a first aid kit is _____.",
+"A wizard would name their houseplant _____.",
+"The worst thing to hear before a school picture is _____.",
+"A dragon's dream job is _____.",
+"The most suspicious thing in a shopping cart is _____.",
+"A secret code should never be written in _____.",
+"The official breakfast of champions should be _____.",
+"A robot's favorite playground equipment is _____.",
+"The worst thing to find in your cereal box is _____.",
+"A haunted umbrella opens only when _____.",
+"The least impressive magic trick makes _____ disappear.",
+"A pirate's favorite chore is _____.",
+"The strangest thing to put in a time capsule is _____.",
+"A detective's favorite thing to say is _____.",
+"The worst thing to name a racehorse is _____.",
+"A wizard's least useful spell makes everything smell like _____.",
+"The official sound of victory is _____.",
+"A suspicious thing to find in a pencil case is _____.",
+"The best name for a snack restaurant is _____.",
+"A dragon's secret fear is _____.",
+"The worst thing to bring into a treehouse is _____.",
+"A robot's favorite excuse is _____.",
+"The most dramatic thing to spill is _____.",
+"A haunted hat whispers about _____.",
+"The least useful button on a remote control says _____.",
+"A pirate's favorite bedtime story is about _____.",
+"The official vegetable of courage is _____.",
+"A wizard's worst roommate habit is _____.",
+"The best thing to find at the bottom of a backpack is _____.",
+"A secret doorbell should sound like _____.",
+"The worst thing to hear from a blender is _____.",
+"A superhero's least glamorous task is _____.",
+"The most suspicious thing to carry in a parade is _____.",
+"A robot's favorite party game is _____.",
+"The official smell of adventure is _____.",
+"A dragon's least favorite sandwich is _____.",
+"The worst thing to discover at a picnic is _____.",
+"A wizard's favorite excuse for being late is _____.",
+"The best name for a tiny kingdom is _____.",
+"A haunted chair only rocks when _____.",
+"The least helpful thing to pack for space is _____.",
+"A detective should always carry _____.",
+"The worst thing to hear from a cake is _____.",
+"A pirate's favorite thing at a yard sale is _____.",
+"The official hat of bad luck is _____.",
+"A robot's secret handshake includes _____.",
+"The strangest thing to find in a snow globe is _____.",
+"A wizard's favorite snack is _____.",
+"The worst thing to see written in the sky is _____.",
+"A superhero's day off includes _____.",
+"The most suspicious thing to keep in a sock drawer is _____.",
+"A haunted vacuum only picks up _____.",
+"The least fun thing to do at a carnival is _____.",
+"A dragon's favorite board game rule is _____.",
+"The best thing to say after dropping a plate is _____.",
+"A secret club for grandparents would be called _____.",
+"The worst thing to find in a popcorn bucket is _____.",
+"A wizard's favorite school subject is _____.",
+"The official drink of bad weather is _____.",
+"A robot's least convincing laugh sounds like _____.",
+"The most dramatic place to sneeze is _____.",
+"A pirate's least favorite kind of treasure is _____.",
+"The best thing to find behind a bookshelf is _____.",
+"A haunted clock always chimes at _____.",
+"The least useful thing in a backpack is _____.",
+"A dragon's favorite hobby is _____.",
+"The worst thing to say during hide-and-seek is _____.",
+"A wizard's shopping cart always includes _____.",
+"The official smell of a mystery is _____.",
+"A robot's dream vacation is _____.",
+"The strangest thing to find in a cereal commercial is _____.",
+"A secret tunnel should never lead to _____.",
+"The best name for a mystery dessert is _____.",
+"A pirate's least favorite school subject is _____.",
+"The most suspicious thing at a birthday party is _____.",
+"A haunted lunchbox always contains _____.",
+"The least impressive thing to juggle is _____.",
+"A dragon's favorite musical instrument is _____.",
+"The worst thing to put in a smoothie is _____.",
+"A wizard's favorite exercise is _____.",
+"The official sound of embarrassment is _____.",
+"A robot trying to tell a joke would start with _____.",
+"The strangest thing to keep on a nightstand is _____.",
+"A pirate's favorite vacation spot is _____.",
+"The best thing to find in an old drawer is _____.",
+"A haunted lamp turns on whenever _____.",
+"The least helpful advice is _____.",
+"A dragon's favorite holiday is _____.",
+"The worst thing to hear from the attic is _____.",
+"A wizard's favorite thing to yell is _____.",
+"The official snack of victory is _____.",
+"A robot's favorite school supply is _____.",
+"The most suspicious thing to bring to a movie theater is _____.",
+"A pirate's least favorite weather is _____.",
+"The best name for a secret recipe is _____.",
+"A haunted door refuses to open unless you say _____.",
+"The least useful superpower is _____.",
+"A dragon's favorite thing to wear is _____.",
+"The worst thing to find in a gift bag is _____.",
+"A wizard's favorite hobby besides magic is _____.",
+"The official dance of awkward silence is _____.",
+"A robot's favorite bedtime snack is _____.",
+"The strangest thing to find on a grocery receipt is _____.",
+"A pirate's greatest fear is _____.",
+"The best thing to keep in a secret drawer is _____.",
+"A haunted bathtub fills itself with _____.",
+"The least helpful thing to say during a board game is _____.",
+"A dragon's favorite kind of music is _____.",
+"The worst thing to hear from under the bed is _____.",
+"A wizard's favorite breakfast cereal is _____.",
+"The official smell of trouble is _____.",
+"A robot's least favorite sound is _____.",
+"The most suspicious thing in a classroom is _____.",
+"A pirate's favorite kind of sandwich is _____.",
+"The best name for a tiny museum is _____.",
+"A haunted backpack hums whenever _____.",
+"The least impressive trophy would be for _____.",
+"A dragon's favorite thing about winter is _____.",
+"The worst thing to put on a postcard is _____.",
+"A wizard's favorite phrase is _____.",
+"The official food of a secret meeting is _____.",
+"A robot's favorite thing to collect is _____.",
+"The strangest thing to find in a pencil sharpener is _____.",
+"A pirate's least favorite chore is _____.",
+"The best thing to discover in the backyard is _____.",
+"A haunted mailbox only delivers _____.",
+"The least useful thing to bring to a dance party is _____.",
+"A dragon's favorite ice cream flavor is _____.",
+"The worst thing to hear from a toy chest is _____.",
+"A wizard's favorite thing in a garage is _____.",
+"The official sound of a really good idea is _____.",
+"A robot's favorite restaurant order is _____.",
+"The most suspicious thing to keep in a lunchroom fridge is _____.",
+"A pirate's favorite thing to shout is _____.",
+"The best name for a tiny spaceship is _____.",
+"A haunted calendar only shows _____.",
+"The least useful invention is _____.",
+"A dragon's favorite thing to read is _____.",
+"The worst thing to find in a blanket fort is _____.",
+"A wizard's favorite thing to borrow is _____.",
+"The official hat of confidence is _____.",
+"A robot's favorite board game piece is _____.",
+"The strangest thing to find in a shoe store is _____.",
+"A pirate's least favorite snack is _____.",
+"The best thing to hear from a fortune teller is _____.",
+"A haunted sandwich whispers _____.",
+"The least helpful thing to bring to a rescue mission is _____.",
+"A dragon's favorite thing to draw is _____.",
+"The worst thing to say to a substitute teacher is _____.",
+"A wizard's favorite thing about Tuesdays is _____.",
+"The official dessert of friendship is _____.",
+"A robot's most suspicious habit is _____.",
+"The strangest thing to find in a coat closet is _____.",
+"A pirate's favorite breakfast food is _____.",
+"The best name for a secret island is _____.",
+"A haunted bicycle pedals itself toward _____.",
+"The least useful thing to put on a keychain is _____.",
+"A dragon's favorite thing to cook is _____.",
+"The worst thing to hear from a mailbox is _____.",
+"A wizard's favorite thing to do at recess is _____.",
+"The official smell of a good nap is _____.",
+"A robot's favorite kind of weather is _____.",
+"The most suspicious thing to keep in a garden shed is _____.",
+"A pirate's favorite thing to trade is _____.",
+"The best thing to find in a library book is _____.",
+"A haunted skateboard only rolls toward _____.",
+"The least impressive secret identity is _____.",
+"A dragon's favorite thing about summer is _____.",
+"The worst thing to put in a pencil case is _____.",
+"A wizard's favorite thing to do on a rainy day is _____.",
+"The official snack of waiting in line is _____.",
+"A robot's favorite thing to name is _____.",
+"The strangest thing to find in a swimming pool is _____.",
+"A pirate's favorite thing to draw on a map is _____.",
+"The best name for a neighborhood mystery is _____.",
+"A haunted cookie jar only opens for _____.",
+"The least useful thing to bring on a field trip is _____.",
+"A dragon's favorite smell is _____.",
+"The worst thing to hear from a school locker is _____.",
+"A wizard's favorite thing to keep in a pocket is _____.",
+"The official sound of lunchtime is _____.",
+"A robot's favorite thing to say goodbye with is _____.",
+"The most suspicious thing to find on a playground is _____.",
+"A pirate's least favorite board game is _____.",
+"The best thing to discover in a cereal box is _____.",
+"A haunted jacket only fits people who _____.",
+"The least impressive parade would celebrate _____.",
+"A dragon's favorite way to relax is _____.",
+"The worst thing to put on a sandwich is _____.",
+"A wizard's favorite thing to name is _____.",
+"The official drink of victory is _____.",
+"A robot's favorite thing about humans is _____.",
+"The strangest thing to find in a picnic basket is _____.",
+"A pirate's favorite song would be about _____.",
+"The best name for a mystery shop is _____.",
+"A haunted pencil only writes _____.",
+"The least useful thing to bring to a snow day is _____.",
+"A dragon's favorite thing to build is _____.",
+"The worst thing to hear during a spelling test is _____.",
+"A wizard's favorite thing to hide is _____.",
+"The official smell of a bad plan is _____.",
+"A robot's favorite thing to pretend is _____.",
+"The most suspicious thing at a talent show is _____.",
+"A pirate's least favorite thing about boats is _____.",
+"The best thing to find in a treehouse is _____.",
+"A haunted pair of shoes always walks toward _____.",
+"The least useful thing to wish for is _____.",
+"A dragon's favorite thing to shout is _____.",
+"The worst thing to find in a pencil pouch is _____.",
+"A wizard's favorite thing to put on toast is _____.",
+"The official snack of secrets is _____.",
+"A robot's favorite room in a house is _____.",
+"The strangest thing to find in a garden is _____.",
+"A pirate's favorite thing to keep under a hat is _____.",
+"The best name for a secret door is _____.",
+"A haunted notebook only contains _____.",
+"The least helpful thing in a survival kit is _____.",
+"A dragon's favorite thing to do after dinner is _____.",
+"The worst thing to hear from a shopping bag is _____.",
+"A wizard's favorite thing to decorate is _____.",
+"The official sound of a tiny celebration is _____.",
+"A robot's favorite thing to do at a party is _____.",
+"The most suspicious thing in a bathtub is _____.",
+"A pirate's least favorite thing to share is _____.",
+"The best thing to find under a rug is _____.",
+"A haunted trophy is awarded for _____.",
+"The least useful thing to take to a picnic is _____.",
+"A dragon's favorite place to nap is _____.",
+"The worst thing to write on a birthday card is _____.",
+"A wizard's favorite thing to collect is _____.",
+"The official smell of a surprise is _____.",
+"A robot's favorite way to celebrate is _____.",
+"The strangest thing to find in a suitcase is _____.",
+"A pirate's favorite thing to put in soup is _____.",
+"The best name for a tiny castle is _____.",
+"A haunted alarm clock only rings when _____.",
+"The least impressive warning label says _____.",
+"A dragon's favorite thing to keep secret is _____.",
+"The worst thing to hear from a refrigerator is _____.",
+"A wizard's favorite thing about camping is _____.",
+"The official snack of a mystery is _____.",
+"A robot's favorite thing to fix is _____.",
+"The most suspicious thing to find in a hat is _____.",
+"A pirate's least favorite kind of shoe is _____.",
+"The best thing to find in a raincoat pocket is _____.",
+"A haunted picture frame always shows _____.",
+"The least useful thing to bring to a talent show is _____.",
+"A dragon's favorite thing to put on a flag is _____.",
+"The worst thing to say while holding a ladder is _____.",
+"A wizard's favorite thing to do at midnight is _____.",
+"The official smell of winning is _____.",
+"A robot's favorite thing to keep in a pocket is _____.",
+"The strangest thing to find in a lunch tray is _____.",
+"A pirate's favorite secret is _____.",
+"The best name for a tiny restaurant is _____.",
+"A haunted spoon only stirs _____.",
+"The least useful thing to keep in a wallet is _____.",
+"A dragon's favorite thing to watch is _____.",
+"The worst thing to find in a campfire is _____.",
+"A wizard's favorite thing to say before leaving is _____.",
+"The official snack of a long car ride is _____.",
+"A robot's favorite thing to write is _____.",
+"The most suspicious thing under a park bench is _____.",
+"A pirate's least favorite kind of music is _____.",
+"The best thing to discover in a basement is _____.",
+"A haunted backpack always smells like _____.",
+"The least impressive secret passage leads to _____.",
+"A dragon's favorite thing to learn is _____.",
+"The worst thing to hear from a tent is _____.",
+"A wizard's favorite thing to put in a soup is _____.",
+"The official sound of a perfect plan is _____.",
+"A robot's favorite way to relax is _____.",
+"The strangest thing to find in a desk drawer is _____.",
+"A pirate's favorite thing to do on land is _____.",
+"The best name for a secret snack is _____.",
+"A haunted flashlight only shines on _____.",
+"The least useful thing to bring to the beach is _____.",
+"A dragon's favorite thing to sing about is _____.",
+"The worst thing to hear during a magic trick is _____.",
+"A wizard's favorite thing to do with glitter is _____.",
+"The official dessert of a great idea is _____.",
+"A robot's favorite thing to keep clean is _____.",
+"The most suspicious thing in a coat pocket is _____.",
+"A pirate's least favorite thing about maps is _____.",
+"The best thing to find in an attic is _____.",
+"A haunted cereal box contains _____.",
+"The least helpful thing to say before a race is _____.",
+"A dragon's favorite thing to buy is _____.",
+"The worst thing to put in a backpack is _____.",
+"A wizard's favorite thing about winter is _____.",
+"The official smell of a secret is _____.",
+"A robot's favorite thing to count is _____.",
+"The strangest thing to find in a flowerpot is _____.",
+"A pirate's favorite thing to do before breakfast is _____.",
+"The best name for a backyard kingdom is _____.",
+"A haunted skateboard park is full of _____.",
+"The least useful thing to put in a toolbox is _____.",
+"A dragon's favorite thing to find is _____.",
+"The worst thing to hear from a birthday present is _____.",
+"A wizard's favorite thing to do with a blanket is _____.",
+"The official snack of being lost is _____.",
+"A robot's favorite thing to watch on TV is _____.",
+"The most suspicious thing to find in a salad is _____.",
+"A pirate's least favorite thing about treasure is _____.",
+"The best thing to find in a glove compartment is _____.",
+"A haunted garden hose sprays _____.",
+"The least impressive thing to discover is _____.",
+"A dragon's favorite thing to do with a pencil is _____.",
+"The worst thing to say at a dance party is _____.",
+"A wizard's favorite thing to keep on a shelf is _____.",
+"The official sound of a secret is _____.",
+"A robot's favorite thing to put on toast is _____.",
+"The strangest thing to find at a bus stop is _____.",
+"A pirate's favorite thing to name is _____.",
+"The best name for a tiny train is _____.",
+"A haunted lunch tray always serves _____.",
+"The least useful thing to bring to a library is _____.",
+"A dragon's favorite thing to do at sunrise is _____.",
+"The worst thing to find in a suitcase zipper is _____.",
+"A wizard's favorite thing about the moon is _____.",
+"The official dessert of getting away with it is _____.",
+"A robot's favorite thing to decorate is _____.",
+"The most suspicious thing to find in a cereal aisle is _____.",
+"A pirate's least favorite thing to hear is _____.",
+"The best thing to find in a secret room is _____.",
+"A haunted pencil sharpener makes pencils write _____.",
+"The least useful thing to keep in a fridge is _____.",
+"A dragon's favorite thing to smell is _____.",
+"The worst thing to hear from a camp counselor is _____.",
+"A wizard's favorite thing to put in a backpack is _____.",
+"The official snack of being brave is _____.",
+"A robot's favorite thing to do with a box is _____.",
+"The strangest thing to find on a roof is _____.",
+"A pirate's favorite thing to say quietly is _____.",
+"The best name for a secret staircase is _____.",
+"A haunted teacup only holds _____.",
+"The least helpful thing to bring to a meeting is _____.",
+"A dragon's favorite thing to do with string is _____.",
+"The worst thing to write on a nametag is _____.",
+"A wizard's favorite thing to do in a kitchen is _____.",
+"The official smell of a good idea is _____.",
+"A robot's favorite thing to practice is _____.",
+"The most suspicious thing to find in a couch cushion is _____.",
+"A pirate's least favorite thing to wear is _____.",
+"The best thing to find in a cereal spoon is _____.",
+"A haunted window only shows _____.",
+"The least impressive thing to brag about is _____.",
+"A dragon's favorite thing to do with socks is _____.",
+"The worst thing to hear from a lunch bag is _____.",
+"A wizard's favorite thing to keep under the bed is _____.",
+"The official sound of a good snack is _____.",
+"A robot's favorite thing to hide is _____.",
+"The strangest thing to find in a birthday cake is _____.",
+"A pirate's favorite thing to do during a storm is _____.",
+"The best name for a secret garden is _____.",
+"A haunted elevator button is labeled _____.",
+"The least useful thing to bring on a hike is _____.",
+"A dragon's favorite thing to do on a weekend is _____.",
+"The worst thing to find in a board game box is _____.",
+"A wizard's favorite thing to do with a spoon is _____.",
+"The official snack of a comeback is _____.",
+"A robot's favorite thing to do with stickers is _____.",
+"The most suspicious thing to find in a shoe is _____.",
+"A pirate's least favorite thing to smell is _____.",
+"The best thing to find in a desk is _____.",
+"A haunted coat only warms people who _____.",
+"The least impressive magic wand is made of _____.",
+"A dragon's favorite thing to do before bed is _____.",
+"The worst thing to say in an echo cave is _____.",
+"A wizard's favorite thing to draw is _____.",
+"The official smell of a perfect day is _____.",
+"A robot's favorite thing about breakfast is _____.",
+"The strangest thing to find in a toy box is _____.",
+"A pirate's favorite thing to keep in a boot is _____.",
+"The best name for a secret tunnel is _____.",
+"A haunted sandwich shop only sells _____.",
+"The least useful thing to bring to a campfire is _____.",
+"A dragon's favorite thing to do with a rock is _____.",
+"The worst thing to hear from a teacher is _____.",
+"A wizard's favorite thing to put on a sign is _____.",
+"The official sound of a mystery is _____.",
+"A robot's favorite thing to do with paper is _____.",
+"The most suspicious thing to find in a hallway is _____.",
+"A pirate's least favorite thing to lose is _____.",
+"The best thing to find inside a wall is _____.",
+"A haunted doorbell only rings for _____.",
+"The least impressive thing to invent is _____.",
+"A dragon's favorite thing to do with a chair is _____.",
+"The worst thing to write in a diary is _____.",
+"A wizard's favorite thing to do at breakfast is _____.",
+"The official snack of a secret plan is _____.",
+"A robot's favorite thing to do with tape is _____.",
+"The strangest thing to find in a locker is _____.",
+"A pirate's favorite thing to keep in a pocket is _____.",
+"The best name for a secret club is _____.",
+"A haunted cereal spoon only eats _____.",
+"The least useful thing to bring to a birthday party is _____.",
+"A dragon's favorite thing to do with a blanket is _____.",
+"The worst thing to hear from a desk is _____.",
+"A wizard's favorite thing to do with chalk is _____.",
+"The official smell of a good secret is _____.",
+"A robot's favorite thing to do in the dark is _____.",
+"The most suspicious thing to find in a lunch bag is _____.",
+"A pirate's least favorite thing to cook is _____.",
+"The best thing to find in a tiny box is _____.",
+"A haunted raincoat only works when _____.",
+"The least impressive thing to hide is _____.",
+"A dragon's favorite thing to do with a map is _____.",
+"The worst thing to say while opening a door is _____.",
+"A wizard's favorite thing to do with bubbles is _____.",
+"The official sound of a good mystery is _____.",
+"A robot's favorite thing to do with buttons is _____.",
+"The strangest thing to find in a cereal bowl is _____.",
+"A pirate's favorite thing to do with rope is _____.",
+"The best name for a secret password is _____.",
+"A haunted book only tells stories about _____.",
+"The least useful thing to bring to a parade is _____.",
+"A dragon's favorite thing to do with a hat is _____.",
+"The worst thing to hear from a suitcase zipper is _____.",
+"A wizard's favorite thing to do with a flashlight is _____.",
+"The official snack of a tiny victory is _____.",
+"A robot's favorite thing to do with a spoon is _____.",
+"The most suspicious thing to find in a shopping bag is _____.",
+"A pirate's least favorite thing to do before bed is _____.",
+"The best thing to find in a jacket pocket is _____.",
+"A haunted lunch table always has _____.",
+"The least impressive thing to name is _____.",
+"A dragon's favorite thing to do with a book is _____.",
+"The worst thing to write on a map is _____.",
+"A wizard's favorite thing to do with a clock is _____.",
+"The official smell of a tiny victory is _____.",
+"A robot's favorite thing to do with a hat is _____.",
+"The strangest thing to find in a desk is _____.",
+"A pirate's favorite thing to do with a candle is _____.",
+"The best name for a secret hallway is _____.",
+"A haunted compass always points to _____.",
+"The least useful thing to bring to a sleepover is _____.",
+"A dragon's favorite thing to do with a pillow is _____.",
+"The worst thing to hear from a picnic basket is _____.",
+"A wizard's favorite thing to do with a key is _____.",
+"The official sound of a tiny disaster is _____.",
+"A robot's favorite thing to do with a backpack is _____.",
+"The most suspicious thing to find in a library book is _____.",
+"A pirate's least favorite thing to find is _____.",
+"The best thing to find in a secret compartment is _____.",
+"A haunted mirror only reflects _____.",
+"The least impressive thing to whisper is _____.",
+"A dragon's favorite thing to do with a sandwich is _____.",
+"The worst thing to say during a group photo is _____.",
+"A wizard's favorite thing to do with a feather is _____.",
+"The official snack of a good guess is _____.",
+"A robot's favorite thing to do with a chair is _____.",
+"The strangest thing to find in a hat is _____.",
+"A pirate's favorite thing to do with a spoon is _____.",
+"The best name for a secret map is _____.",
+"A haunted wagon only carries _____.",
+"The least useful thing to bring to a pool party is _____.",
+"A dragon's favorite thing to do with a kite is _____.",
+"The worst thing to hear from a backpack pocket is _____.",
+"A wizard's favorite thing to do with a shoe is _____.",
+"The official smell of a great guess is _____.",
+"A robot's favorite thing to do with a lunchbox is _____.",
+"The most suspicious thing to find in a blanket fort is _____.",
+"A pirate's least favorite thing to borrow is _____.",
+"The best thing to find in an old coat is _____.",
+"A haunted staircase always leads to _____.",
+"The least impressive thing to put on a flag is _____.",
+"A dragon's favorite thing to do with a cup is _____.",
+"The worst thing to write on a chalkboard is _____.",
+"A wizard's favorite thing to do with a button is _____.",
+"The official sound of a good secret is _____.",
+"A robot's favorite thing to do with a pillow is _____.",
+"The strangest thing to find in a bathtub is _____.",
+"A pirate's favorite thing to do with a chair is _____.",
+"The best name for a secret room is _____.",
+"A haunted picnic blanket always attracts _____.",
+"The least useful thing to bring to a spelling test is _____.",
+"A dragon's favorite thing to do with a lamp is _____.",
+"The worst thing to hear from a coat closet is _____.",
+"A wizard's favorite thing to do with a towel is _____.",
+"The official snack of a lucky break is _____.",
+"A robot's favorite thing to do with a map is _____.",
+"The most suspicious thing to find in a desk drawer is _____.",
+"A pirate's least favorite thing to sing is _____.",
+"The best thing to find in a locked box is _____.",
+"A haunted picnic basket only carries _____.",
+"The least impressive thing to say dramatically is _____.",
+"A dragon's favorite thing to do with a notebook is _____.",
+"The worst thing to write on a trophy is _____.",
+"A wizard's favorite thing to do with a mirror is _____.",
+"The official smell of a lucky break is _____.",
+"A robot's favorite thing to do with a trophy is _____.",
+"The strangest thing to find in a gift bag is _____.",
+"A pirate's favorite thing to do with a backpack is _____.",
+"The best name for a secret code is _____.",
+"A haunted board game always ends with _____.",
+"The least useful thing to bring to a secret meeting is _____.",
+"A dragon's favorite thing to do with a broom is _____.",
+"The worst thing to hear from a cookie jar is _____.",
+"A wizard's favorite thing to do with a balloon is _____.",
+"The official sound of a lucky break is _____.",
+"A robot's favorite thing to do with a clock is _____.",
+"The most suspicious thing to find in a flowerpot is _____.",
+"A pirate's least favorite thing to count is _____.",
+"The best thing to find in a secret envelope is _____.",
+"A haunted umbrella only opens for _____.",
+"The least impressive thing to keep secret is _____.",
+"A dragon's favorite thing to do with a blanket fort is _____.",
+"The worst thing to write on a menu is _____.",
+"A wizard's favorite thing to do with a suitcase is _____.",
+"The official smell of a secret meeting is _____.",
+"A robot's favorite thing to do with a calendar is _____.",
+"The strangest thing to find in a sandwich is _____.",
+"A pirate's favorite thing to do with a trophy is _____.",
+"The best name for a secret signal is _____.",
+"A haunted lunchbox only opens at _____.",
+"The least useful thing to bring to a mystery is _____.",
+"A dragon's favorite thing to do with a lunchbox is _____.",
+"The worst thing to hear from a pencil sharpener is _____.",
+"A wizard's favorite thing to do with a trophy is _____.",
+"The official snack of a secret signal is _____.",
+"A robot's favorite thing to do with a secret is _____.",
+"The most suspicious thing to find in a birthday cake is _____.",
+"A pirate's least favorite thing to do with rope is _____.",
+"The best thing to find in a hidden drawer is _____.",
+"A haunted trophy case only displays _____.",
+"The least impressive thing to do in slow motion is _____.",
+"A dragon's favorite thing to do with a secret is _____.",
+"The worst thing to write on a lunch bag is _____.",
+"A wizard's favorite thing to do with a secret is _____.",
+"The official smell of a hidden treasure is _____.",
+"A robot's favorite thing to do with a mystery is _____.",
+"The strangest thing to find in a secret room is _____.",
+"A pirate's favorite thing to do with a mystery is _____.",
+"The best name for a hidden treasure is _____."
+];
+
+const MODES={
+  same:{
+    label:"Same Page",
+    note:"Match the room. Each player in a matching group scores the number of other players in that group.",
+    rule:"Group matching answers. Each player scores group size minus 1. Unique answers score 0."
+  },
+  pair:{
+    label:"Perfect Pair",
+    note:"Find exactly one partner. Pairs score big; crowd answers score small; lone answers score nothing.",
+    rule:"Exactly two matching players score 3 each. Groups of 3 or more score 1 each. Unique answers score 0."
+  },
+  odd:{
+    label:"Odd Duck",
+    note:"Avoid the herd, but stay valid. Unique answers score only if the table agrees they fit the prompt.",
+    rule:"Unique valid answers score 2. Any matching answer scores 0. Table votes on close calls."
+  }
+};
+
+/* ---------------- state ---------------- */
+let players=5, seconds=45, rounds=7, round=0, mode="same";
+let deck=[], timerId=null, roundEnd=0;
+
+/* ---------------- helpers ---------------- */
+const $=id=>document.getElementById(id);
+function shuffled(arr){const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+function drawPrompt(){
+  if(deck.length<1) deck=shuffled(PROMPTS);
+  return deck.pop();
+}
+function renderPrompt(text){
+  $("promptText").innerHTML="";
+  const parts=text.split("_____");
+  $("promptText").append(document.createTextNode(parts[0]));
+  const blank=document.createElement("span");
+  blank.className="blank";
+  blank.textContent="_____"+(parts[1]||"");
+  $("promptText").appendChild(blank);
+}
+
+/* ---------------- rules modal ---------------- */
+const rules=$("rules"),helpBtn=$("help"),closeBtn=$("closeRules");
+helpBtn.addEventListener("click",()=>{rules.hidden=false;closeBtn.focus();});
+closeBtn.addEventListener("click",()=>{rules.hidden=true;helpBtn.focus();});
+rules.addEventListener("click",e=>{if(e.target===rules){rules.hidden=true;helpBtn.focus();}});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&!rules.hidden){rules.hidden=true;helpBtn.focus();}
+});
+
+/* ---------------- setup ---------------- */
+function syncSetup(){
+  $("pCount").textContent=players;
+  $("sCount").textContent=seconds;
+  $("rCount").textContent=rounds;
+  $("pMinus").disabled=players<=3; $("pPlus").disabled=players>=10;
+  $("sMinus").disabled=seconds<=30; $("sPlus").disabled=seconds>=90;
+  $("rMinus").disabled=rounds<=3; $("rPlus").disabled=rounds>=12;
+  $("modeNote").textContent=MODES[mode].note;
+  document.querySelectorAll(".modeRow button").forEach(btn=>{
+    btn.classList.toggle("on",btn.dataset.mode===mode);
+  });
+}
+document.querySelectorAll(".modeRow button").forEach(btn=>{
+  btn.addEventListener("click",()=>{mode=btn.dataset.mode;syncSetup();});
+});
+$("pMinus").addEventListener("click",()=>{players=Math.max(3,players-1);syncSetup();});
+$("pPlus" ).addEventListener("click",()=>{players=Math.min(10,players+1);syncSetup();});
+$("sMinus").addEventListener("click",()=>{seconds=Math.max(30,seconds-15);syncSetup();});
+$("sPlus" ).addEventListener("click",()=>{seconds=Math.min(90,seconds+15);syncSetup();});
+$("rMinus").addEventListener("click",()=>{rounds=Math.max(3,rounds-1);syncSetup();});
+$("rPlus" ).addEventListener("click",()=>{rounds=Math.min(12,rounds+1);syncSetup();});
+syncSetup();
+
+function unlockAudio(){
+  if(!audioCtx){try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+  if(audioCtx&&audioCtx.state==="suspended") audioCtx.resume().catch(()=>{});
+}
+$("deal").addEventListener("click",()=>{unlockAudio();round=0;dealRound();});
+$("next").addEventListener("click",()=>{unlockAudio();dealRound();});
+$("setupBtn").addEventListener("click",()=>{
+  if(timerId){clearInterval(timerId);timerId=null;}
+  releaseScreen();
+  $("setup").classList.add("on"); $("play").classList.remove("on");
+});
+
+/* ---------------- round ---------------- */
+const playScr=$("play"), timerWrap=$("timerWrap"),
+      clockEl=$("clock"), leftArc=timerWrap.querySelector(".left");
+
+function dealRound(){
+  if(timerId){clearInterval(timerId);timerId=null;}
+  $("setup").classList.remove("on");
+  playScr.classList.add("on");
+  playScr.classList.remove("dimmed");
+  round=round>=rounds?1:round+1;
+  $("roundBadge").textContent="Round "+round+" / "+rounds;
+  $("promptType").textContent=MODES[mode].label;
+  $("scoreRule").textContent=MODES[mode].rule;
+  renderPrompt(drawPrompt());
+  $("playMsg").textContent="Write one answer. Keep it secret.";
+  holdScreen();
+  timerWrap.classList.remove("late");
+  roundEnd=performance.now()+seconds*1000;
+  tick();
+  timerId=setInterval(tick,200);
+}
+function tick(){
+  const left=Math.max(0,(roundEnd-performance.now())/1000);
+  const total=Math.ceil(left), m=(total/60)|0, s=total%60;
+  clockEl.textContent=m+":"+String(s).padStart(2,"0");
+  leftArc.style.strokeDashoffset=(1-left/seconds).toFixed(4);
+  if(left<=10) timerWrap.classList.add("late");
+  if(left<=0){
+    clearInterval(timerId); timerId=null;
+    playScr.classList.add("dimmed");
+    $("playMsg").textContent=round>=rounds
+      ? "Pencils down - score the final round and crown the weirdest shared brain."
+      : "Pencils down - reveal, group, score, then deal the next prompt.";
+    chime();
+    releaseScreen();
+  }
+}
+
+/* ---------------- wake lock ---------------- */
+let wakeLock=null;
+async function holdScreen(){
+  try{ if("wakeLock" in navigator) wakeLock=await navigator.wakeLock.request("screen"); }
+  catch(e){ wakeLock=null; }
+}
+function releaseScreen(){
+  if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock=null; }
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible" && timerId) holdScreen();
+});
+
+/* ---------------- chime ---------------- */
+let audioCtx=null;
+function chime(){
+  if(!audioCtx) return;
+  const t=audioCtx.currentTime;
+  [392.0,523.25,659.25].forEach((f,i)=>{
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type="sine"; o.frequency.value=f;
+    g.gain.setValueAtTime(0,t+i*0.12);
+    g.gain.linearRampToValueAtTime(0.18,t+i*0.12+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+i*0.12+0.9);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t+i*0.12); o.stop(t+i*0.12+1);
+  });
+}
+})();
+</script>
+</body>
+</html>

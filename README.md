@@ -39,6 +39,15 @@ A creative thinking game. Get a letter and a list of categories — write an ans
 - Cross out matching answers, score what's unique
 - Best for 2–10 players
 
+### [Same Page](same-page/same-page.html)
+
+A fill-in-the-prompt party game. Write the answer you think the room will write, then score by matching minds.
+
+- Configurable players (3–10), time (30–90 seconds), and rounds (3–12)
+- Three scoring modes: Same Page, Perfect Pair, and Odd Duck
+- 700+ original prompts included
+- Best for 3–10 players
+
 ## How to Use
 
 1. **Open** any game's HTML file in a web browser
