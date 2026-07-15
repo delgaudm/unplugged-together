@@ -48,6 +48,15 @@ A fill-in-the-prompt party game. Write the answer you think the room will write,
 - 700+ original prompts included
 - Best for 3–10 players
 
+### [Greenlight](greenlight/greenlight.html)
+
+A co-op road-trip pitch game. The passenger deals two actors, a strange movie genre, and a studio note while the driver brainstorms by voice.
+
+- No winners or scoring — just make the best terrible movie together
+- Configurable brainstorm and final-pitch timers
+- 200+ actors, 150+ genres, and 100 studio notes included
+- Best for 2+ players, especially long drives
+
 ## How to Use
 
 1. **Open** any game's HTML file in a web browser

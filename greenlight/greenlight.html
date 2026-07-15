@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Greenlight</title>
+<style>
+  :root{
+    --felt:#1b2a2e; --felt-hi:#28414a;
+    --bone:#f2ead8; --bone-dim:#d6cbb2;
+    --ink:#241d16; --brass:#c9a24a; --glass:#9fd4e2;
+    --danger:#d96a4a; --paper:#f2ead8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(120% 90% at 50% 8%, var(--felt-hi) 0%, var(--felt) 55%, #0d1618 100%);
+    color:var(--bone-dim);
+    font-family:ui-sans-serif,"Helvetica Neue",Arial,sans-serif;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:20px;padding:22px;
+  }
+  header{letter-spacing:.34em;text-transform:uppercase;font-size:11px;font-weight:600;color:#8aa0a4}
+  footer{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#5c6e73;text-align:center}
+
+  button{
+    font:inherit;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+    color:#12211f;background:var(--brass);border:0;border-radius:999px;padding:13px 28px;
+    cursor:pointer;box-shadow:0 6px 0 #8a6c2a,0 12px 22px rgba(0,0,0,.45);
+    transition:transform .08s ease,box-shadow .08s ease,border-color .12s ease,color .12s ease;
+  }
+  button:active{transform:translateY(4px);box-shadow:0 2px 0 #8a6c2a,0 6px 12px rgba(0,0,0,.45)}
+  button:disabled{opacity:.4;cursor:default}
+  button:focus-visible{outline:3px solid var(--glass);outline-offset:3px}
+  button.quiet{
+    background:transparent;color:#8aa0a4;box-shadow:none;
+    border:1px solid rgba(138,160,164,.45);padding:8px 16px;font-size:10px;
+  }
+  button.quiet:hover{color:var(--bone-dim);border-color:var(--bone-dim)}
+  button.quiet:active{transform:none}
+
+  #help{position:fixed;top:16px;right:16px;z-index:5}
+  .screen{display:none;flex-direction:column;align-items:center;gap:20px;width:100%;max-width:640px}
+  .screen.on{display:flex}
+  .lead{font-size:15px;line-height:1.55;text-align:center;max-width:500px}
+  .eyebrow{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#8aa0a4}
+
+  .steppers{display:flex;gap:28px;flex-wrap:wrap;justify-content:center}
+  .stepper{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .stepper .row{display:flex;align-items:center;gap:14px}
+  .stepper .val{font-family:ui-monospace,Menlo,monospace;font-size:34px;font-weight:700;
+                color:var(--bone);min-width:2.7ch;text-align:center}
+  .stepper button{padding:0;width:44px;height:44px;border-radius:50%;font-size:20px;letter-spacing:0}
+
+  .topRow{display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap}
+  #phaseBadge{
+    min-width:132px;padding:10px 14px;border-radius:8px;text-align:center;
+    background:rgba(255,255,255,.05);border:1px solid rgba(159,212,226,.14);
+    color:var(--bone-dim);font-family:ui-monospace,Menlo,monospace;font-size:13px;
+  }
+  #timerWrap{position:relative;width:96px;height:96px}
+  #timerWrap svg{transform:rotate(-90deg)}
+  #timerWrap .track{fill:none;stroke:rgba(255,255,255,.10);stroke-width:7}
+  #timerWrap .left{fill:none;stroke:var(--brass);stroke-width:7;stroke-linecap:round;
+                   stroke-dasharray:1;stroke-dashoffset:0;transition:stroke .4s}
+  #timerWrap.late .left{stroke:var(--danger)}
+  #clock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+         font-family:ui-monospace,Menlo,monospace;font-size:22px;font-weight:700;color:var(--bone-dim)}
+  #timerWrap.late #clock{color:#e8917a}
+
+  #pitchCard{
+    width:min(600px,92vw);display:grid;gap:13px;
+    background:linear-gradient(150deg,var(--paper) 0%,#e2d7bd 100%);
+    color:var(--ink);border-radius:16px;padding:24px 26px;
+    box-shadow:inset 0 0 0 1px rgba(90,70,40,.35),inset 0 -9px 14px rgba(120,95,55,.22),
+               0 20px 45px rgba(0,0,0,.5);
+  }
+  .line{display:grid;gap:4px}
+  .label{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#7a6a4a}
+  .big{font-family:Helvetica,"Helvetica Neue",Arial,sans-serif;font-weight:700;
+       font-size:clamp(26px,6vw,38px);line-height:1.08}
+  #genre{color:#6e5421}
+  #noteBox{
+    width:min(600px,92vw);min-height:82px;display:grid;align-content:center;gap:7px;
+    padding:15px 18px;border-radius:8px;text-align:center;
+    background:rgba(255,255,255,.05);border:1px solid rgba(159,212,226,.14);
+    color:#93a6aa;font-size:14px;line-height:1.45;
+  }
+  #noteBox.live{border-color:rgba(201,162,74,.55);color:var(--bone-dim);background:rgba(201,162,74,.08)}
+  #noteBox .noteText{font-weight:700;color:var(--bone)}
+  #playMsg{min-height:1.4em;font-size:13px;color:#93a6aa;text-align:center;line-height:1.4}
+  .btnRow{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+
+  #rules{
+    position:fixed;inset:0;z-index:10;background:rgba(9,16,18,.82);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  #rules[hidden]{display:none}
+  #rulesCard{
+    max-width:520px;max-height:88vh;overflow:auto;
+    background:linear-gradient(170deg,#22363c,#17262b);
+    border:1px solid rgba(159,212,226,.22);border-radius:14px;
+    padding:30px 32px;color:var(--bone-dim);box-shadow:0 30px 60px rgba(0,0,0,.6);
+  }
+  #rulesCard h2{font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:var(--brass);margin-bottom:18px}
+  #rulesCard ol{padding-left:20px;display:grid;gap:12px;font-size:14.5px;line-height:1.55}
+  #rulesCard .fine{margin-top:14px;font-size:12.5px;line-height:1.5;color:#93a6aa}
+  #rulesCard .promise{color:var(--glass)}
+  #closeRules{margin-top:20px;width:100%}
+
+  @media (max-width:480px){
+    body{gap:17px;padding:18px}
+    #pitchCard{padding:22px 20px}
+    .big{font-size:29px}
+  }
+</style>
+</head>
+<body>
+
+<header>Greenlight</header>
+<button id="help" class="quiet" aria-haspopup="dialog">How to play</button>
+
+<div id="rules" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" hidden>
+  <div id="rulesCard">
+    <h2 id="rulesTitle">How to play</h2>
+    <ol>
+      <li>The passenger is the console. Tap <strong>Deal a pitch</strong>, then read the two actors and genre aloud.</li>
+      <li>Together, brainstorm the movie. The driver should only listen and talk, keeping eyes on the road.</li>
+      <li>Halfway through, the console gets a <strong>studio note</strong>. Read it aloud and force the pitch to pivot.</li>
+      <li>When brainstorm time ends, deliver a 30-second final logline. No winner, no score - just decide if the imaginary studio greenlights it.</li>
+      <li>Tap <strong>New pitch</strong> whenever the car needs a new terrible masterpiece.</li>
+    </ol>
+    <p class="fine">Real public names are used as creative prompt ingredients only. No endorsement, affiliation, or appearance is implied.</p>
+    <p class="fine promise">This page runs entirely on your device. No internet needed, no cookies, no storage, no tracking, no analytics - just pure fun.</p>
+    <button id="closeRules">Back to the game</button>
+  </div>
+</div>
+
+<section id="setup" class="screen on">
+  <p class="lead">Two stars, one overly specific genre, and a studio note that ruins everything in the best possible way. Built for a passenger to run while the driver plays by voice.</p>
+  <div class="steppers">
+    <div class="stepper">
+      <span class="eyebrow">Brainstorm</span>
+      <div class="row">
+        <button id="bMinus" aria-label="shorter brainstorm">-</button>
+        <span class="val" id="bCount">3:00</span>
+        <button id="bPlus" aria-label="longer brainstorm">+</button>
+      </div>
+    </div>
+    <div class="stepper">
+      <span class="eyebrow">Final Pitch</span>
+      <div class="row">
+        <button id="fMinus" aria-label="shorter final pitch">-</button>
+        <span class="val" id="fCount">0:30</span>
+        <button id="fPlus" aria-label="longer final pitch">+</button>
+      </div>
+    </div>
+  </div>
+  <button id="deal">Deal a pitch</button>
+</section>
+
+<section id="play" class="screen">
+  <div class="topRow">
+    <div id="phaseBadge">Brainstorm</div>
+    <div id="timerWrap">
+      <svg viewBox="0 0 96 96" width="96" height="96" aria-hidden="true">
+        <circle class="track" cx="48" cy="48" r="40"/>
+        <circle class="left"  cx="48" cy="48" r="40" pathLength="1"/>
+      </svg>
+      <span id="clock">3:00</span>
+    </div>
+  </div>
+
+  <div id="pitchCard">
+    <div class="line">
+      <span class="label">Actor 1</span>
+      <span class="big" id="actor1"></span>
+    </div>
+    <div class="line">
+      <span class="label">Actor 2</span>
+      <span class="big" id="actor2"></span>
+    </div>
+    <div class="line">
+      <span class="label">Genre</span>
+      <span class="big" id="genre"></span>
+    </div>
+  </div>
+
+  <div id="noteBox">
+    <span class="label" id="noteLabel">Studio Note</span>
+    <span id="noteText">Arrives halfway through the brainstorm.</span>
+  </div>
+
+  <p id="playMsg">Build the concept: title, trailer moment, and why anyone would buy a ticket.</p>
+  <div class="btnRow">
+    <button id="dropNote">Drop note now</button>
+    <button id="finalPitch">Final pitch</button>
+    <button id="again" class="quiet">New pitch</button>
+    <button id="setupBtn" class="quiet">Change setup</button>
+  </div>
+</section>
+
+<footer>Plays fully offline &nbsp;·&nbsp; no cookies, no storage, no tracking, no analytics</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- content ---------------- */
+const ACTORS=[
+"Amy Adams","Mahershala Ali","Pedro Pascal","Keke Palmer","Jack Black","Meryl Streep",
+"Tom Hanks","Zendaya","Danny DeVito","Viola Davis","Keanu Reeves","Awkwafina",
+"Denzel Washington","Emma Stone","Daniel Kaluuya","Sandra Oh","Ryan Gosling","Angela Bassett",
+"Dev Patel","Regina King","Oscar Isaac","Florence Pugh","Idris Elba","Greta Lee",
+"John Boyega","Lupita Nyong'o","Steve Carell","Issa Rae","Michelle Yeoh","Paul Rudd",
+"Lakeith Stanfield","Ayo Edebiri","Hugh Grant","Tilda Swinton","Sterling K. Brown","Maya Rudolph",
+"Simu Liu","Octavia Spencer","Adam Driver","Rachel Weisz","Donald Glover","Tessa Thompson",
+"Willem Dafoe","Constance Wu","Benicio del Toro","Saoirse Ronan","Riz Ahmed","Natasha Lyonne",
+"Jeff Goldblum","Janelle Monae","Michael B. Jordan","Catherine O'Hara","Colman Domingo","Anya Taylor-Joy",
+"Ken Watanabe","Kristen Wiig","Brian Tyree Henry","Rosamund Pike","Taika Waititi","Carey Mulligan",
+"Daniel Craig","Ali Wong","Gael Garcia Bernal","Mindy Kaling","Mark Ruffalo","Niecy Nash-Betts",
+"Harrison Ford","Quinta Brunson","John Cho","Julia Louis-Dreyfus","Jonathan Majors","Rachel McAdams",
+"David Tennant","Michaela Coel","Forest Whitaker","Kristen Bell","Eddie Murphy","Brie Larson",
+"Andrew Garfield","Salma Hayek","Stanley Tucci","America Ferrera","John C. Reilly","Rashida Jones",
+"Christopher Walken","Zoe Saldana","Seth Rogen","Olivia Colman","Henry Golding","Da'Vine Joy Randolph",
+"Javier Bardem","Lucy Liu","Bill Hader","Jodie Comer","Don Cheadle","Ana de Armas",
+"Joaquin Phoenix","Margo Martindale","Kumail Nanjiani","Gillian Anderson","Daniel Radcliffe","Taraji P. Henson",
+"Sam Rockwell","Ming-Na Wen","Lake Bell","Giancarlo Esposito","Bowen Yang","Linda Cardellini",
+"Michael Shannon","Sandra Bullock","Benedict Wong","Toni Collette","Diego Luna","Elizabeth Debicki",
+"Chris Pine","Sarah Paulson","Laurence Fishburne","Beanie Feldstein","Wanda Sykes","Matt Berry",
+"Jodie Foster","Mads Mikkelsen","Alfre Woodard","Brett Goldstein","Penelope Cruz","Will Forte",
+"Zazie Beetz","Jason Momoa","Carrie Coon","John Malkovich","Niecy Nash","Nick Offerman",
+"Cynthia Erivo","Cillian Murphy","Leslie Jones","Rami Malek","Rachel Brosnahan","LaKeith Stanfield",
+"Hannah Waddingham","Tony Leung","Rebel Wilson","Sterling K Brown","Mckenna Grace","J.K. Simmons",
+"Lena Waithe","Ben Whishaw","Aubrey Plaza","Yahya Abdul-Mateen II","Marisa Tomei","Joel Kim Booster",
+"Isabella Rossellini","Patton Oswalt","Murray Bartlett","Danai Gurira","Kieran Culkin","Gina Rodriguez",
+"Jean Smart","Steven Yeun","Ewan McGregor","Jameela Jamil","Anthony Mackie","Kathryn Hahn",
+"Manny Jacinto","Diane Keaton","Winston Duke","Jenna Ortega","Hiroyuki Sanada","Tracee Ellis Ross",
+"Josh O'Connor","Uzo Aduba","Alan Cumming","Gugu Mbatha-Raw","Pedro Alonso","Phoebe Waller-Bridge",
+"Billy Porter","Patti LuPone","John David Washington","Teyonah Parris","Ben Schwartz","Kristin Chenoweth",
+"David Harbour","Rhea Seehorn","Mingyu Kim","Stephanie Hsu","Walton Goggins","Sonequa Martin-Green",
+"Richard Ayoade","Helena Bonham Carter","Randall Park","Miriam Margolyes","Kingsley Ben-Adir","Sheryl Lee Ralph",
+"Chiwetel Ejiofor","Parker Posey","Harvey Guillen","Naomi Ackie","Martin Short","Melissa McCarthy",
+"Iain Glen","Lauren Lapkus","Mads Lewis","O'Shea Jackson Jr.","Imelda Staunton","Jason Mantzoukas",
+"Michelle Rodriguez","Timothy Olyphant","Rose Byrne","Ke Huy Quan","Ncuti Gatwa","Lily Tomlin",
+"Rob Delaney","Hong Chau","David Oyelowo","Maya Hawke","Andy Serkis","Cristin Milioti",
+"Pedro Pascal's stunt double","A beloved character actor","A retired action star","A mysterious Broadway legend"
+];
+
+const GENRES=[
+"Cyberpunk cooking heist","Post-apocalyptic rom-com","High-stakes legal drama with animals",
+"Time-traveling western","Haunted house mockumentary","Underwater workplace comedy","Space opera bake-off",
+"Noir mystery at a theme park","Medieval startup satire","Road-trip monster musical",
+"Small-town vampire election drama","Arctic treasure-hunt family film","Disaster movie at a dog show",
+"Romantic comedy inside a jury room","Gritty reboot of a cooking competition","Alien invasion etiquette drama",
+"Steampunk submarine caper","Sports movie about competitive napping","Ghost story set in a mall",
+"Holiday thriller in a cheese factory","Courtroom drama on a cruise ship","Spy romance at a spelling bee",
+"Dinosaur rescue workplace comedy","One-room survival rom-com","Prison escape with puppets",
+"Mystery set at a miniature golf course","Found-footage pirate adventure","Superhero film about municipal services",
+"Fantasy epic about accountants","Buddy cop opera","Heist movie at a silent retreat",
+"Zombie road movie with a marching band","Political thriller at a summer camp","Martial arts cooking tournament",
+"Romance between rival weather reporters","Eco-thriller in a luxury hotel","Space western with karaoke",
+"Gothic mystery at a dentist's office","High school reunion disaster movie","Treasure hunt in an airport",
+"Musical courtroom thriller","Fairy-tale tech support comedy","Spy movie at a dog obedience school",
+"Noir detective story in a cereal factory","Historical drama about a fake moon landing","Monster movie at a wedding",
+"Rom-com during a citywide blackout","Alien buddy movie in a retirement home","Bank heist during a magic show",
+"Fantasy quest through a grocery store","Sports drama about professional tag","Undercover chef thriller",
+"Haunted podcast investigation","Robotic babysitter family comedy","Time-loop camping trip",
+"Luxury train murder mystery with toddlers","Post-apocalyptic gardening show","Dragon custody battle drama",
+"Suburban spy musical","Action movie inside a library","Wizard school parent-teacher conference",
+"Deep-sea reality show thriller","Ancient prophecy about a food truck","Romance at a volcano observatory",
+"Cybersecurity thriller in a bakery","High fantasy bowling league","Western about competitive birdwatching",
+"Haunted lighthouse cooking show","Mars colony roommate comedy","Noir mystery at a laundromat",
+"Monster truck ballet drama","Intergalactic customer service comedy","Victorian ghost dating show",
+"Secret-agent summer camp adventure","Snowbound hotel talent show","Political thriller at a farmers market",
+"Buddy road movie with talking luggage","Romantic thriller at a chess tournament","Action comedy in a bird sanctuary",
+"Mermaid legal procedural","Musical disaster movie at a water park","Detective story at a clown college",
+"Heist movie in a botanical garden","Post-apocalyptic home makeover show","Cyborg wedding planner rom-com",
+"Haunted escape room documentary","Wizard detective beach movie","Undercover alien cooking drama",
+"Supernatural sports underdog story","Spy thriller at a petting zoo","Retro-futurist elevator drama",
+"Fantasy courtroom musical","Family adventure in a lost-and-found office","Time-traveling food critic satire",
+"Dystopian talent competition","Rom-com about rival lighthouse keepers","Giant-robot small claims court drama",
+"Paranormal cruise ship comedy","Ancient curse at a bowling alley","Space station murder mystery",
+"Haunted amusement park buddy comedy","Secret society at a book club","Epic quest for the perfect sandwich",
+"Spy drama inside a toy store","Zombie musical at a county fair","Dragon-racing sports documentary",
+"Alien exchange student rom-com","Detective story at a birthday party","Underwater bank heist",
+"Martian western about a missing cow","Gothic romance at a hardware store","Reality-show thriller in a bunker",
+"Monster movie during a bake sale","Time-traveling divorce mediation","Action thriller at a knitting circle",
+"Fantasy epic about public transit","Ghost courtroom drama","Noir thriller at a pickleball tournament",
+"Space opera about rival florists","Post-apocalyptic marching band movie","Pirate rom-com at a ski lodge",
+"Cursed board game family drama","Secret-agent musical at a dentist convention","Mystery at a haunted aquarium",
+"Medieval cooking competition","Cyberpunk daycare thriller","Romance inside a volcano lair",
+"Buddy comedy about rival fortune tellers","Historical epic at a mall food court","Disaster film at a spelling bee",
+"Wizard heist at a museum gift shop","Alien invasion during a podcast recording","Sports drama about competitive hide-and-seek",
+"Haunted retirement village mystery","Noir comedy in a sock factory","Fantasy adventure about lost mail",
+"Road-trip thriller with a sentient car","Rom-com at a monster support group","Undercover detective at a Renaissance fair",
+"Space survival movie with one chair","Legal thriller about a haunted will","Action comedy at a pottery class",
+"Supernatural western in a karaoke bar","Robot uprising office comedy","Mermaid political campaign drama",
+"Disaster movie in a tiny house","Spy thriller at a plant nursery","Heist movie during a wedding toast",
+"Fantasy quest for a library card","Romance at an intergalactic DMV","Monster mystery in a hotel kitchen",
+"Noir detective tale at a sleep clinic","Cyberpunk musical about parking meters","Time-loop courtroom comedy",
+"Post-apocalyptic pet grooming drama","Alien cooking competition on live TV","Haunted opera rehearsal mystery",
+"Dinosaur courtroom sketch comedy","Treasure hunt through a suburban cul-de-sac","Space pirate workplace sitcom"
+];
+
+const NOTES=[
+"The studio says it has to be a musical.",
+"The budget vanished; it all takes place in one room.",
+"The studio needs a talking animal sidekick.",
+"The ending must set up three sequels.",
+"One actor has to secretly be the villain.",
+"It now has to appeal to teens.",
+"The studio wants a surprise cooking competition.",
+"The whole story must happen during a wedding.",
+"The studio says no explosions, only emotional explosions.",
+"One character can only speak in slogans.",
+"It has to include a training montage.",
+"The movie must be family-friendly without losing the chaos.",
+"The studio needs a holiday release angle.",
+"Every scene has to involve food.",
+"The title has to be a terrible pun.",
+"The studio wants it to take place on a boat.",
+"One actor must play two roles.",
+"The third act has to happen during a live broadcast.",
+"The studio insists there is a dance battle.",
+"The villain has to be a weather event.",
+"It must now be based around a missing briefcase.",
+"The studio wants a cute robot.",
+"No one is allowed to leave the building.",
+"The studio needs a celebrity cameo, but it can only be a statue.",
+"The ending has to be weirdly hopeful.",
+"The studio demands a dog with a job.",
+"It now takes place entirely overnight.",
+"The studio wants a courtroom scene.",
+"One character must have a completely useless superpower.",
+"The soundtrack is all banjo covers.",
+"The studio wants a fake product tie-in.",
+"Everyone is trapped by a traffic jam.",
+"The studio wants more romance, but no kissing.",
+"The main character has to be afraid of the genre.",
+"The studio wants a twist that changes the title.",
+"A child has to understand the plot before the adults do.",
+"The villain is technically correct.",
+"The studio wants one scene in total silence.",
+"The whole movie has to be told as a confession.",
+"The studio wants a scene at a grocery store.",
+"It has to include an inspirational speech that goes wrong.",
+"The studio wants a mysterious old map.",
+"The budget only covers flashlights and folding chairs.",
+"The studio wants one actor to play an object.",
+"Every problem must be solved by teamwork.",
+"The studio needs it to be secretly educational.",
+"The final scene has to happen in an elevator.",
+"The studio wants a makeover montage.",
+"One character has to narrate like a nature documentary.",
+"The studio demands a fake sport with real stakes.",
+"The whole story now happens during a power outage.",
+"The studio wants a running joke about soup.",
+"No phones work in the movie.",
+"The studio wants the villain redeemed by dessert.",
+"It has to include a dramatic apology to a chair.",
+"The studio wants a scene where everyone wears disguises.",
+"The ending must be a public performance.",
+"The studio wants a side plot about a lost pet.",
+"It now has to be a road-trip movie.",
+"The studio demands a secret underground room.",
+"One actor has to be allergic to the plot device.",
+"The studio wants the title said out loud at the worst possible moment.",
+"The whole thing must feel like a trailer for a better movie.",
+"The studio wants it to be set during a heat wave.",
+"The climax has to involve parallel parking.",
+"The studio wants a mysterious envelope.",
+"One character is pretending to know how to do their job.",
+"The studio wants a fake documentary crew in every scene.",
+"It has to end with everyone starting a business.",
+"The studio wants a scene at a school talent show.",
+"No villain; only misunderstandings.",
+"The studio wants a haunted appliance.",
+"The whole movie must be built around a family secret.",
+"The studio says the hero cannot drive.",
+"It needs an animal trial.",
+"The studio wants a slow-motion entrance.",
+"The twist must make the genre make sense.",
+"The studio wants it cheaper: remove the city.",
+"The final line has to be a question.",
+"The studio wants a character who communicates only with signs.",
+"It has to include a terrible first date.",
+"The studio wants a scene where everyone lies politely.",
+"The climax must happen in a gift shop.",
+"The studio demands a rival team.",
+"One actor's character must be wildly overqualified.",
+"The studio wants the most expensive scene to be implied offscreen.",
+"The whole plot starts because someone misread a flyer.",
+"The studio wants a ghost who gives practical advice.",
+"The ending has to involve breakfast.",
+"The studio wants a chase scene, but nobody can run.",
+"It has to include a fake award ceremony.",
+"The studio wants the heroes to win by being nice.",
+"One character must keep changing accents.",
+"The studio says the poster needs a giant duck.",
+"The whole movie is secretly a love letter to public libraries.",
+"The villain's plan only works if everyone is polite.",
+"The studio wants a dramatic reveal involving a sandwich.",
+"The heroes must pitch the movie inside the movie.",
+"The studio wants a musical number, but only one person knows why.",
+"The ending has to make the driver say, 'Okay, I would watch that.'"
+];
+
+/* ---------------- state ---------------- */
+let brainstorm=180, finalSeconds=30;
+let phase="setup", timerId=null, phaseEnd=0, phaseTotal=0, noteDropped=false;
+let currentNote="";
+
+/* ---------------- helpers ---------------- */
+const $=id=>document.getElementById(id);
+function draw(arr){return arr[(Math.random()*arr.length)|0];}
+function format(sec){const m=(sec/60)|0,s=sec%60;return m+":"+String(s).padStart(2,"0");}
+
+/* ---------------- rules modal ---------------- */
+const rules=$("rules"),helpBtn=$("help"),closeBtn=$("closeRules");
+helpBtn.addEventListener("click",()=>{rules.hidden=false;closeBtn.focus();});
+closeBtn.addEventListener("click",()=>{rules.hidden=true;helpBtn.focus();});
+rules.addEventListener("click",e=>{if(e.target===rules){rules.hidden=true;helpBtn.focus();}});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&!rules.hidden){rules.hidden=true;helpBtn.focus();}
+});
+
+/* ---------------- setup ---------------- */
+function syncSetup(){
+  $("bCount").textContent=format(brainstorm);
+  $("fCount").textContent=format(finalSeconds);
+  $("bMinus").disabled=brainstorm<=120; $("bPlus").disabled=brainstorm>=360;
+  $("fMinus").disabled=finalSeconds<=30; $("fPlus").disabled=finalSeconds>=90;
+}
+$("bMinus").addEventListener("click",()=>{brainstorm=Math.max(120,brainstorm-30);syncSetup();});
+$("bPlus" ).addEventListener("click",()=>{brainstorm=Math.min(360,brainstorm+30);syncSetup();});
+$("fMinus").addEventListener("click",()=>{finalSeconds=Math.max(30,finalSeconds-15);syncSetup();});
+$("fPlus" ).addEventListener("click",()=>{finalSeconds=Math.min(90,finalSeconds+15);syncSetup();});
+syncSetup();
+
+function unlockAudio(){
+  if(!audioCtx){try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+  if(audioCtx&&audioCtx.state==="suspended") audioCtx.resume().catch(()=>{});
+}
+$("deal").addEventListener("click",()=>{unlockAudio();dealPitch();});
+$("again").addEventListener("click",()=>{unlockAudio();dealPitch();});
+$("setupBtn").addEventListener("click",()=>{
+  if(timerId){clearInterval(timerId);timerId=null;}
+  releaseScreen();
+  $("setup").classList.add("on"); $("play").classList.remove("on");
+});
+
+/* ---------------- play ---------------- */
+const timerWrap=$("timerWrap"), clockEl=$("clock"), leftArc=timerWrap.querySelector(".left");
+
+function dealPitch(){
+  if(timerId){clearInterval(timerId);timerId=null;}
+  const a1=draw(ACTORS);
+  let a2=draw(ACTORS);
+  while(a2===a1) a2=draw(ACTORS);
+  $("actor1").textContent=a1;
+  $("actor2").textContent=a2;
+  $("genre").textContent=draw(GENRES);
+  currentNote=draw(NOTES);
+  noteDropped=false;
+  $("noteBox").classList.remove("live");
+  $("noteLabel").textContent="Studio Note";
+  $("noteText").textContent="Arrives halfway through the brainstorm.";
+  $("setup").classList.remove("on");
+  $("play").classList.add("on");
+  $("dropNote").disabled=false;
+  $("finalPitch").disabled=false;
+  startPhase("brainstorm",brainstorm);
+}
+
+function startPhase(nextPhase,seconds){
+  phase=nextPhase;
+  phaseTotal=seconds;
+  phaseEnd=performance.now()+seconds*1000;
+  timerWrap.classList.remove("late");
+  $("phaseBadge").textContent=phase==="final"?"Final Pitch":"Brainstorm";
+  $("playMsg").textContent=phase==="final"
+    ? "Deliver the 30-second logline. Passenger can be the very picky studio executive."
+    : "Build the concept: title, trailer moment, and why anyone would buy a ticket.";
+  holdScreen();
+  tick();
+  timerId=setInterval(tick,200);
+}
+
+function dropNote(){
+  if(noteDropped) return;
+  noteDropped=true;
+  $("noteBox").classList.add("live");
+  $("noteLabel").textContent="Studio Note";
+  $("noteText").innerHTML='<span class="noteText">'+currentNote+"</span>";
+  $("dropNote").disabled=true;
+  chime([329.63,392.0,523.25]);
+}
+$("dropNote").addEventListener("click",dropNote);
+$("finalPitch").addEventListener("click",()=>{
+  if(timerId){clearInterval(timerId);timerId=null;}
+  if(!noteDropped) dropNote();
+  startPhase("final",finalSeconds);
+  $("finalPitch").disabled=true;
+});
+
+function tick(){
+  const left=Math.max(0,(phaseEnd-performance.now())/1000);
+  const total=Math.ceil(left);
+  clockEl.textContent=format(total);
+  leftArc.style.strokeDashoffset=(1-left/phaseTotal).toFixed(4);
+  if(left<=10) timerWrap.classList.add("late");
+  if(phase==="brainstorm" && !noteDropped && left<=phaseTotal/2) dropNote();
+  if(left<=0){
+    clearInterval(timerId); timerId=null;
+    if(phase==="brainstorm"){
+      startPhase("final",finalSeconds);
+      $("finalPitch").disabled=true;
+    }else{
+      $("phaseBadge").textContent="Greenlight?";
+      $("playMsg").textContent="Thumbs up or trash pile? Either way, deal another pitch when the road gets quiet.";
+      chime([523.25,659.25,784.0]);
+      releaseScreen();
+    }
+  }
+}
+
+/* ---------------- wake lock ---------------- */
+let wakeLock=null;
+async function holdScreen(){
+  try{ if("wakeLock" in navigator) wakeLock=await navigator.wakeLock.request("screen"); }
+  catch(e){ wakeLock=null; }
+}
+function releaseScreen(){
+  if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock=null; }
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible" && timerId) holdScreen();
+});
+
+/* ---------------- chime ---------------- */
+let audioCtx=null;
+function chime(notes){
+  if(!audioCtx) return;
+  const t=audioCtx.currentTime;
+  notes.forEach((f,i)=>{
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type="sine"; o.frequency.value=f;
+    g.gain.setValueAtTime(0,t+i*0.12);
+    g.gain.linearRampToValueAtTime(0.16,t+i*0.12+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+i*0.12+0.75);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t+i*0.12); o.stop(t+i*0.12+0.8);
+  });
+}
+})();
+</script>
+</body>
+</html>
