@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#20191a">
+<title>Petty Court</title>
+<style>
+  :root{
+    --night:#20191a;--night-hi:#33292a;--wine:#6b2833;--wine-hi:#8b3947;
+    --paper:#f4eedf;--paper-shadow:#d9ccb1;--ink:#261f1b;--muted:#988e80;
+    --brass:#d1a94f;--brass-dark:#8d6b27;--teal:#70b8b4;--danger:#d56550;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{min-height:100%;background:var(--night)}
+  body{
+    min-height:100vh;background:radial-gradient(100% 75% at 50% 0%,var(--night-hi),var(--night) 62%,#120f10);
+    color:#ddd3c1;font-family:ui-sans-serif,"Helvetica Neue",Arial,sans-serif;
+    display:flex;flex-direction:column;align-items:center;padding:18px 18px 24px;gap:18px;
+  }
+  button,input{font:inherit}
+  button{cursor:pointer}
+  button:focus-visible,input:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+  button:disabled{opacity:.38;cursor:default}
+  [hidden]{display:none!important}
+
+  .appHeader{width:min(720px,100%);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;align-items:center;gap:10px;color:var(--paper)}
+  .seal{
+    width:42px;height:42px;border:2px solid var(--brass);border-radius:50%;display:grid;place-items:center;
+    color:var(--brass);box-shadow:inset 0 0 0 3px var(--night),inset 0 0 0 4px rgba(209,169,79,.4)
+  }
+  .seal svg{width:21px;height:21px;stroke-width:2.2}
+  .brandText strong{display:block;font-family:Georgia,"Times New Roman",serif;font-size:22px;line-height:1;letter-spacing:0}
+  .brandText span{display:block;margin-top:4px;color:var(--muted);font-size:9px;letter-spacing:.24em;text-transform:uppercase}
+  .headerTools{display:flex;gap:8px}
+  .iconText{display:inline-flex;align-items:center;gap:7px}
+  .iconText svg{width:15px;height:15px}
+
+  .btn{
+    border:0;border-radius:999px;padding:12px 20px;background:var(--brass);color:#20190f;
+    font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+    box-shadow:0 5px 0 var(--brass-dark),0 10px 20px rgba(0,0,0,.35);
+    transition:transform .08s ease,box-shadow .08s ease,background .15s ease
+  }
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--brass-dark),0 5px 12px rgba(0,0,0,.35)}
+  .btn.secondary{background:var(--wine-hi);color:var(--paper);box-shadow:0 5px 0 #4b1822,0 10px 20px rgba(0,0,0,.35)}
+  .btn.quiet{background:transparent;color:#b5aa98;border:1px solid #665b53;box-shadow:none;padding:9px 13px;font-size:9px}
+  .btn.quiet:active{transform:none}
+  .btn.danger{background:transparent;color:#e08471;border:1px solid rgba(213,101,80,.55);box-shadow:none}
+
+  .screen{display:none;width:min(720px,100%);flex-direction:column;align-items:center;gap:20px}
+  .screen.on{display:flex}
+  .lead{max-width:590px;text-align:center;font-size:15px;line-height:1.55;color:#c8bead}
+  .sectionLabel{font-size:9px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+  .setupBlock{width:100%;display:grid;gap:10px}
+  .segmented{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .segment{
+    min-height:76px;border:1px solid #5c5050;border-radius:7px;background:rgba(255,255,255,.025);color:#c8bead;
+    padding:12px 10px;text-align:left
+  }
+  .segment[aria-pressed="true"]{border-color:var(--brass);background:rgba(209,169,79,.1);color:var(--paper)}
+  .segment strong{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+  .segment span{display:block;margin-top:6px;color:#958a7c;font-size:11px;line-height:1.3}
+  .segment[aria-pressed="true"] span{color:#c8bda9}
+  .categoryGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .categoryToggle{position:relative}
+  .categoryToggle input{position:absolute;opacity:0;pointer-events:none}
+  .categoryToggle span{
+    min-height:44px;display:grid;place-items:center;padding:8px;border:1px solid #5c5050;border-radius:7px;
+    color:#aaa092;text-align:center;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase
+  }
+  .categoryToggle input:checked+span{border-color:var(--teal);background:rgba(112,184,180,.11);color:#d8efed}
+  .categoryToggle input:focus-visible+span{outline:3px solid var(--teal);outline-offset:3px}
+  .timeControl{display:flex;align-items:center;justify-content:center;gap:15px}
+  .circleBtn{width:42px;height:42px;border-radius:50%;border:0;background:var(--brass);color:#241d11;font-size:21px;font-weight:800;box-shadow:0 4px 0 var(--brass-dark)}
+  .circleBtn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--brass-dark)}
+  #timeValue{min-width:150px;text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:27px;color:var(--paper)}
+  #timeValue small{display:block;margin-top:3px;color:var(--muted);font:700 8px ui-sans-serif,Arial,sans-serif;letter-spacing:.2em;text-transform:uppercase}
+
+  .courtTop{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  #caseNumber{font:700 10px ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  #categoryBadge{padding:6px 9px;border:1px solid rgba(112,184,180,.42);border-radius:999px;color:#bce1de;font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+  .caseFile{
+    position:relative;width:100%;min-height:245px;padding:31px 30px 34px;border-radius:7px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    background:var(--paper);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(85,62,32,.22),inset 0 -10px 18px rgba(105,80,44,.15),0 20px 42px rgba(0,0,0,.46)
+  }
+  .caseFile:before{content:"";position:absolute;top:16px;left:20px;right:20px;border-top:1px solid rgba(84,58,37,.17)}
+  .caseFile .stamp{margin-bottom:15px;color:var(--wine);font:800 10px ui-sans-serif,Arial,sans-serif;letter-spacing:.28em;text-transform:uppercase}
+  #takeText{max-width:620px;font-family:Georgia,"Times New Roman",serif;font-size:31px;line-height:1.24;letter-spacing:0}
+
+  #choiceArea{width:100%;display:grid;gap:13px;text-align:center}
+  #choicePrompt{color:#c8bead;font-size:14px;line-height:1.4}
+  .choiceRow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .stanceChoice{
+    min-height:60px;border-radius:7px;border:1px solid #65585a;background:rgba(255,255,255,.035);
+    color:var(--paper);font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase
+  }
+  .stanceChoice.agree{border-color:rgba(112,184,180,.65)}
+  .stanceChoice.disagree{border-color:rgba(213,101,80,.65)}
+
+  #argumentArea{width:100%;display:grid;gap:14px}
+  .argumentTop{display:grid;grid-template-columns:1fr 112px 1fr;align-items:center;gap:12px}
+  .counsel{min-height:82px;border:1px solid #584c4c;border-radius:7px;padding:12px;text-align:center;display:grid;align-content:center;gap:6px;background:rgba(255,255,255,.025)}
+  .counsel span{font-size:9px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .counsel strong{font-size:17px;letter-spacing:.08em;text-transform:uppercase}
+  .counsel.agree strong{color:#8ed0cb}.counsel.disagree strong{color:#e48270}
+  .timer{position:relative;width:108px;height:108px;margin:auto}
+  .timer svg{transform:rotate(-90deg)}
+  .timer .track{fill:none;stroke:rgba(255,255,255,.1);stroke-width:7}
+  .timer .left{fill:none;stroke:var(--brass);stroke-width:7;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:0}
+  .timer.late .left{stroke:var(--danger)}
+  #clock{position:absolute;inset:0;display:grid;place-items:center;color:var(--paper);font:800 25px ui-monospace,Menlo,monospace}
+  #phaseText{text-align:center;color:#a79c8e;font-size:12px;line-height:1.35;min-height:1.35em}
+  .actionRow{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+
+  #rulingArea{width:100%;display:grid;gap:14px;text-align:center}
+  .rulingOptions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .rulingBtn{min-height:48px;border:1px solid #5c5050;border-radius:7px;background:transparent;color:#c8bead;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+  .rulingBtn[aria-pressed="true"]{border-color:var(--brass);background:rgba(209,169,79,.12);color:var(--paper)}
+  .quoteWrap{display:grid;gap:7px;text-align:left}
+  #quoteInput{width:100%;border:1px solid #665b53;border-radius:7px;background:#171314;color:var(--paper);padding:13px 14px;font-size:14px}
+  #quoteInput::placeholder{color:#776d64}
+  #saveStatus{min-height:1.3em;color:var(--teal);font-size:11px;text-align:center}
+
+  .modal{position:fixed;inset:0;z-index:20;background:rgba(11,8,9,.84);display:flex;align-items:center;justify-content:center;padding:18px}
+  .modalCard{width:min(600px,100%);max-height:88vh;overflow:auto;border:1px solid #665956;border-radius:8px;background:#292122;color:#d8cebd;padding:25px;box-shadow:0 30px 70px rgba(0,0,0,.65)}
+  .modalHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+  .modalHead h2{font-family:Georgia,"Times New Roman",serif;color:var(--paper);font-size:24px;letter-spacing:0}
+  .rulesList{padding-left:20px;display:grid;gap:11px;font-size:14px;line-height:1.5}
+  .privacy{margin-top:16px;color:#9c9184;font-size:12px;line-height:1.5}
+  .privacy strong{color:var(--teal)}
+  #lawSearch{width:100%;border:1px solid #665b53;border-radius:7px;background:#171314;color:var(--paper);padding:11px 13px;font-size:13px;margin-bottom:13px}
+  #lawList{display:grid;gap:10px}
+  .lawItem{border-top:1px solid #514545;padding:14px 0 4px;display:grid;gap:7px}
+  .lawMeta{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#978b7e;font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+  .lawTake{font-family:Georgia,"Times New Roman",serif;color:var(--paper);font-size:17px;line-height:1.35}
+  .lawQuote{color:#b5d8d5;font-size:13px;font-style:italic;line-height:1.4}
+  .lawActions{display:flex;justify-content:flex-end}
+  .empty{text-align:center;padding:28px 10px;color:#8f8478;font-size:13px;line-height:1.5}
+  .modalFoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+
+  footer{margin-top:auto;text-align:center;color:#665d56;font-size:9px;letter-spacing:.12em;text-transform:uppercase;line-height:1.5}
+  @media(max-width:600px){
+    body{padding:14px 13px 20px;gap:15px}
+    .brandText strong{font-size:19px}.brandText span{display:none}.seal{width:38px;height:38px}
+    .headerTools .btn.quiet{padding:8px 10px}.headerTools .labelText{display:none}
+    .segmented{grid-template-columns:1fr}.segment{min-height:58px}
+    .categoryGrid{grid-template-columns:repeat(2,1fr)}
+    .caseFile{min-height:225px;padding:28px 20px 30px}#takeText{font-size:26px}
+    .argumentTop{grid-template-columns:1fr 86px 1fr;gap:7px}.timer{width:82px;height:82px}.timer svg{width:82px;height:82px}#clock{font-size:20px}
+    .counsel{min-height:74px;padding:8px}.counsel strong{font-size:14px}
+    .rulingOptions{grid-template-columns:1fr}.rulingBtn{min-height:43px}
+    .modalCard{padding:21px 18px}.modalFoot{align-items:stretch;flex-direction:column}.modalFoot .btn{width:100%}
+  }
+  @media(max-width:360px){#takeText{font-size:23px}.choiceRow{grid-template-columns:1fr}.argumentTop{grid-template-columns:1fr 76px 1fr}.timer,.timer svg{width:72px;height:72px}}
+</style>
+</head>
+<body>
+
+<header class="appHeader">
+  <div class="brand">
+    <span class="seal" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m14 13-7.5 7.5a2.1 2.1 0 0 1-3-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/>
+      </svg>
+    </span>
+    <span class="brandText"><strong>Petty Court</strong><span>Trivial matters. Serious arguments.</span></span>
+  </div>
+  <div class="headerTools">
+    <button id="caseLawBtn" class="btn quiet iconText" aria-haspopup="dialog" aria-label="Open Case Law">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5"/><path d="M9 13h6M9 17h6"/></svg>
+      <span class="labelText">Case Law</span> <span id="lawCount">0</span>
+    </button>
+    <button id="helpBtn" class="btn quiet" aria-haspopup="dialog" aria-label="How to play">?</button>
+  </div>
+</header>
+
+<section id="setupScreen" class="screen on">
+  <p class="lead">The driver chooses a side. The passenger argues the opposite. When the Gavel drops, somebody may have to defend the thing they just attacked.</p>
+
+  <div class="setupBlock">
+    <span class="sectionLabel">Court procedure</span>
+    <div class="segmented" id="modeControl">
+      <button class="segment" data-mode="turnabout" aria-pressed="true"><strong>Turnabout</strong><span>Choose sides, then swap when the Gavel drops.</span></button>
+      <button class="segment" data-mode="opposing" aria-pressed="false"><strong>Opposing Counsel</strong><span>Choose sides and defend them to the bitter end.</span></button>
+      <button class="segment" data-mode="blind" aria-pressed="false"><strong>Blind Justice</strong><span>The court assigns both sides, then swaps them.</span></button>
+    </div>
+  </div>
+
+  <div class="setupBlock">
+    <span class="sectionLabel">Seconds per side</span>
+    <div class="timeControl">
+      <button id="timeMinus" class="circleBtn" aria-label="shorter arguments">-</button>
+      <span id="timeValue">0:30<small>per side</small></span>
+      <button id="timePlus" class="circleBtn" aria-label="longer arguments">+</button>
+    </div>
+  </div>
+
+  <div class="setupBlock">
+    <span class="sectionLabel">Docket</span>
+    <div class="categoryGrid" id="categoryGrid"></div>
+  </div>
+
+  <button id="startCourt" class="btn">Call court to order</button>
+</section>
+
+<section id="courtScreen" class="screen">
+  <div class="courtTop">
+    <span id="caseNumber">Case 001</span>
+    <span id="categoryBadge">Food Court</span>
+  </div>
+
+  <article class="caseFile">
+    <span class="stamp">The People vs. Common Sense</span>
+    <h1 id="takeText"></h1>
+  </article>
+
+  <div id="choiceArea">
+    <p id="choicePrompt">Driver: announce your honest position. Passenger, tap it below.</p>
+    <div class="choiceRow" id="choiceButtons">
+      <button id="driverAgrees" class="stanceChoice agree">Driver agrees</button>
+      <button id="driverDisagrees" class="stanceChoice disagree">Driver disagrees</button>
+    </div>
+    <button id="assignSides" class="btn secondary" hidden>Reveal assignments</button>
+  </div>
+
+  <div id="argumentArea" hidden>
+    <div class="argumentTop">
+      <div id="driverCounsel" class="counsel"><span>Driver</span><strong id="driverSide"></strong></div>
+      <div id="timer" class="timer">
+        <svg viewBox="0 0 108 108" width="108" height="108" aria-hidden="true"><circle class="track" cx="54" cy="54" r="45"/><circle class="left" cx="54" cy="54" r="45" pathLength="1"/></svg>
+        <span id="clock">0:30</span>
+      </div>
+      <div id="passengerCounsel" class="counsel"><span>Passenger</span><strong id="passengerSide"></strong></div>
+    </div>
+    <p id="phaseText">Opening arguments. Make the unreasonable sound inevitable.</p>
+    <div class="actionRow">
+      <button id="gavelBtn" class="btn secondary iconText">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 13-7.5 7.5a2.1 2.1 0 0 1-3-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/></svg>
+        Drop the Gavel
+      </button>
+      <button id="closeArguments" class="btn quiet">Close arguments</button>
+    </div>
+  </div>
+
+  <div id="rulingArea" hidden>
+    <span class="sectionLabel">Who made the stronger case?</span>
+    <div class="rulingOptions">
+      <button class="rulingBtn" data-ruling="Driver" aria-pressed="false">Driver</button>
+      <button class="rulingBtn" data-ruling="Passenger" aria-pressed="false">Passenger</button>
+      <button class="rulingBtn" data-ruling="Hung jury" aria-pressed="false">Court in chaos</button>
+    </div>
+    <label class="quoteWrap" for="quoteInput">
+      <span class="sectionLabel">Quote of the case - optional</span>
+      <input id="quoteInput" maxlength="180" placeholder="The most unhinged yet logical argument...">
+    </label>
+    <p id="saveStatus"></p>
+    <div class="actionRow">
+      <button id="saveLaw" class="btn secondary">Add to Case Law</button>
+      <button id="nextCase" class="btn">Next case</button>
+      <button id="changeDocket" class="btn quiet">Change docket</button>
+    </div>
+  </div>
+</section>
+
+<div id="rulesModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" hidden>
+  <div class="modalCard">
+    <div class="modalHead"><h2 id="rulesTitle">Court Procedure</h2><button id="closeRules" class="btn quiet">Close</button></div>
+    <ol class="rulesList">
+      <li>The passenger is the court clerk and operates the phone. The driver plays entirely by listening and talking.</li>
+      <li>Read the hot take aloud. The driver chooses Agree or Disagree; the passenger must argue the opposite.</li>
+      <li>In Turnabout, the Gavel drops halfway through and both players immediately swap positions.</li>
+      <li>After the arguments, issue a ruling or declare the court in chaos. There is no final winner.</li>
+      <li>Save the best arguments as Case Law. They remain available on this device for future legal precedent.</li>
+    </ol>
+    <p class="privacy"><strong>Road rule:</strong> the driver keeps eyes and hands off the phone. Petty Court works fully offline. Case Law and seen cases are stored only in this browser.</p>
+  </div>
+</div>
+
+<div id="lawModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="lawTitle" hidden>
+  <div class="modalCard">
+    <div class="modalHead"><h2 id="lawTitle">Case Law</h2><button id="closeLaw" class="btn quiet">Close</button></div>
+    <input id="lawSearch" type="search" placeholder="Search precedent..." aria-label="Search Case Law">
+    <div id="lawList"></div>
+    <div class="modalFoot">
+      <button id="clearLaw" class="btn danger">Clear all Case Law</button>
+      <button id="doneLaw" class="btn">Return to court</button>
+    </div>
+  </div>
+</div>
+
+<footer>Fully offline &nbsp;·&nbsp; no account, tracking, or analytics &nbsp;·&nbsp; Case Law stays on this device</footer>
+
+<script>
+(function(){
+"use strict";
+
+const CATEGORY_META={
+  food:{name:"Food Court"},
+  social:{name:"Social Statutes"},
+  tech:{name:"Tech Tribunal"},
+  home:{name:"Domestic Disputes"},
+  road:{name:"Road Rules"},
+  entertainment:{name:"Entertainment Law"},
+  language:{name:"Language Crimes"},
+  nonsense:{name:"Abstract Nonsense"}
+};
+
+const CURATED={
+food:[
+"Boneless wings are the best chicken delivery system; bones are packaging you pay for.",
+"Pizza crust is the handle, and eating it is like eating the popsicle stick.",
+"A sandwich cut diagonally tastes better because triangles have better flavor distribution.",
+"Cold pizza is not leftovers; it is a separate breakfast food.",
+"The heel is the best slice of bread, and people reject it because they fear confidence.",
+"A burger taller than your mouth is a failed piece of engineering.",
+"Cereal is better dry, with milk served separately as a beverage pairing.",
+"Brunch is breakfast with a cover charge.",
+"Water has a flavor, and every household has been lying about theirs.",
+"The tiny overcooked french fry is the finest fry in the container.",
+"Putting ice in white wine makes it a cocktail.",
+"Good french fries should never need ketchup.",
+"Different pasta shapes taste different even when the ingredients are identical.",
+"Grilled cheese exists mainly as a utensil for eating tomato soup.",
+"Breakfast for dinner is better than breakfast for breakfast.",
+"Dessert should be ordered first, while everyone is still capable of making good decisions.",
+"Sparkling water is more refreshing because it puts up a fight.",
+"Leftovers become meal prep if you wait twenty-four hours before eating them.",
+"Pickles improve every sandwich that deserves to exist.",
+"A salad with enough croutons is just nachos with paperwork."
+],
+social:[
+"Arriving exactly on time to a party is more awkward than arriving twenty minutes late.",
+"No worries almost always means there were worries.",
+"The person who starts a group chat is responsible for ending it.",
+"Making the bed is staging a room you already plan to destroy.",
+"Birthday celebrations should expire after forty-eight hours.",
+"The Irish Exit is polite because goodbyes are just meetings about leaving.",
+"A reaction emoji counts as a complete response.",
+"If someone shows you one photo on their phone, swiping is trespassing.",
+"Small talk is cooperative improv and refusing to participate is bad scene work.",
+"The only honest way to end a phone call is to say, 'I am going to stop talking now.'",
+"Being five minutes early is just being late to something else.",
+"A handwritten thank-you note makes gratitude feel like homework.",
+"People should be allowed to leave one social event per year without inventing an excuse.",
+"The host should announce when a party has reached its natural ending.",
+"Saying 'we should do this again' creates a legally binding social obligation.",
+"A birthday card without a personal message is an overpriced envelope.",
+"The person nearest the elevator buttons becomes temporary public staff.",
+"Holding a door from too far away is an act of aggression disguised as kindness.",
+"Calling instead of texting first is the social equivalent of showing up unannounced.",
+"There is no polite way to split a restaurant check evenly when one person ordered three courses."
+],
+tech:[
+"Read receipts improve civilization and should be mandatory.",
+"Voice messages under twenty seconds are superior to texts.",
+"The typing indicator is a threat disguised as a user-interface feature.",
+"Phone cases are helmets that make every expensive phone look cheap.",
+"The Caps Lock key should be replaced with a dedicated drama button.",
+"Smart watches are tiny supervisors that live on your wrist.",
+"A phone at one percent battery lasts longer than its first twenty percent.",
+"Every video call should display a mandatory ending time.",
+"Autocorrect should never be allowed to change a person's name.",
+"A voice assistant misunderstanding you three times counts as an argument.",
+"QR-code menus are websites wearing restaurant uniforms.",
+"Passwords should be complete sentences so at least one person knows what they mean.",
+"Reply All should require a short written justification.",
+"A cracked phone screen is the modern equivalent of a scar with a story.",
+"Software updates should have to explain what they broke before listing what they improved.",
+"Every charging cable works perfectly until it becomes emotionally important.",
+"The snooze button is a negotiation feature, not a failure of discipline.",
+"Predictive text knows enough about us to start paying rent.",
+"A laptop sticker is a bumper sticker for someone who rarely leaves the couch.",
+"The mute button is the most important invention in modern communication."
+],
+home:[
+"A top sheet is an administrative layer between you and your blanket.",
+"Decorative towels are household misinformation.",
+"Unloading the dishwasher is harder than loading it because loading still contains hope.",
+"Throw pillows are a nightly chore disguised as interior design.",
+"Socks should be disposable because matching them is unpaid clerical work.",
+"The chair covered in clothes is a legitimate storage system.",
+"A junk drawer is more useful than every organized drawer combined.",
+"Vacuuming before guests arrive is just lying about how you live.",
+"The thermostat should be controlled by the person wearing the fewest layers.",
+"Folding fitted sheets is a ceremonial skill with no practical value.",
+"The good scissors become ordinary scissors the moment everyone knows where they are.",
+"A mug can be considered clean if it held the same beverage yesterday.",
+"The laundry basket is a perfectly acceptable final destination for clean clothes.",
+"A room is not messy if every object is visible and retrievable.",
+"Dishwashers should be unloaded by the person who used the last clean fork.",
+"Candles are tiny fireplaces for people who do not want the responsibility of wood.",
+"The kitchen counter is the natural habitat of unopened mail.",
+"Matching bath towels is an unrealistic standard imposed by catalogs.",
+"The freezer is where good intentions go to become archaeology.",
+"Every home needs one drawer that no guest is permitted to understand."
+],
+road:[
+"The passenger controls the music; the driver controls the temperature.",
+"Gas-station snacks taste better than identical snacks bought at a grocery store.",
+"A scenic route is what lost people call being wrong with confidence.",
+"A rest stop with vending machines counts as a restaurant after midnight.",
+"A road trip does not officially begin until your hometown disappears from the radio.",
+"Missing an exit earns the driver thirty seconds of immunity from commentary.",
+"Hotel breakfast waffles are worth waking up early for, even when nothing else is.",
+"Every long drive needs one unnecessary detour.",
+"The person who says 'we do not need gas yet' becomes responsible for all future fuel decisions.",
+"Road-trip snacks should be chosen by entertainment value, not nutritional value.",
+"The best seat in a car is the back seat diagonally behind the driver.",
+"A clean rest-stop bathroom deserves a five-star review.",
+"The driver may veto one song per hour without explanation.",
+"If the navigation adds fewer than five minutes, it is not a real detour.",
+"Every road trip should begin with a snack nobody would eat at home.",
+"The first person to notice the fuel light has fulfilled their civic duty.",
+"A roadside attraction does not have to be good to be worth stopping for.",
+"Car naps count as real sleep only if you wake up in a different state.",
+"The person who packed the snacks has final authority over snack distribution.",
+"Singing loudly is an acceptable substitute for knowing the lyrics."
+],
+entertainment:[
+"Movies over two hours should be legally required to have an intermission.",
+"Subtitles improve every movie, including movies in your own language.",
+"Weekly television is better than binge-watching because anticipation is part of the show.",
+"Remakes should only be allowed to remake bad movies.",
+"Skipping opening credits is like arriving late to a wedding.",
+"A spoiler expires after ten years.",
+"Books with maps are automatically better than books without maps.",
+"The villain is usually better dressed because evil respects tailoring.",
+"Laugh tracks are honest because they admit when a joke needs assistance.",
+"Sitcom apartments should be classified as fantasy settings.",
+"Movie trailers should not be allowed to show anything from the final hour.",
+"The best character in a mystery is always the person who appears suspicious for no reason.",
+"Watching a bad movie with friends is better than watching a great movie alone.",
+"A show's theme song should never be skipped during the final episode.",
+"Audiobooks count as reading because the story still entered through your head.",
+"Every action movie improves when one character is wildly underqualified.",
+"A sequel should have to explain why the first ending was not enough.",
+"Reality television is a documentary about what people do near free snacks.",
+"The person choosing the movie gets only three minutes to make the decision.",
+"Finishing a terrible show out of commitment is more impressive than finishing a great one."
+],
+language:[
+"The letter C is redundant and should be removed from the alphabet.",
+"'Fine' is never a neutral word.",
+"The word 'queue' is one letter followed by four silent people waiting their turn.",
+"Silent letters are spelling traps left by previous generations.",
+"'Maybe' means no with a small waiting room attached.",
+"Every acronym eventually becomes a word nobody remembers how to expand.",
+"The plural of spouse should be spice because the English language owes us one nice thing.",
+"'Almost ready' is a unit of time that can mean anything from one minute to an hour.",
+"The word 'moist' is innocent and has been unfairly prosecuted.",
+"Exclamation points are emotional seasoning and most messages are under-seasoned.",
+"A semicolon is just a comma that went to graduate school.",
+"People only say 'interesting' when the honest adjective would cause paperwork.",
+"The phrase 'with all due respect' cancels any respect that follows it.",
+"Every family pronounces at least one common word incorrectly on purpose.",
+"'We need to talk' should be required to include a topic.",
+"The word 'literally' has earned the right to mean figuratively through persistence.",
+"Nicknames longer than the original name have failed their only assignment.",
+"An ellipsis is punctuation for making a normal sentence feel suspicious.",
+"The alphabet should be reordered by how often each letter is used.",
+"'I hear you' is the polite version of 'nothing will change.'"
+],
+nonsense:[
+"Tuesdays are worse than Mondays because Mondays at least have a clear brand.",
+"February is the correct length for every month.",
+"Umbrellas should be square; circular umbrellas waste valuable corners.",
+"Escalators are amusement rides that adults are too embarrassed to enjoy properly.",
+"Pockets are more important than fashion, and clothing without them is unfinished.",
+"Every chair should have a cupholder; civilization simply stopped designing too soon.",
+"Three o'clock is a fake time: too late for lunch, too early for dinner, and trusted by no one.",
+"Mirrors are live photographs with an unnecessarily demanding subject.",
+"A staircase is a stationary escalator that has given up on helping.",
+"The moon receives too much credit for working the night shift.",
+"Centaurs have six limbs and deserve a much more confusing scientific classification.",
+"Shoes are portable floors that we carry from building to building.",
+"Zero is the most suspicious number because it changes everything while claiming to be nothing.",
+"Every calendar is just a to-do list written by the sun.",
+"A straw is a tiny elevator operated by your mouth.",
+"Doors marked Pull are personality tests with immediate results.",
+"A hallway is a room whose only hobby is introducing other rooms.",
+"The week should begin on Saturday so everyone starts with a victory.",
+"A blanket is clothing that refuses to commit to sleeves.",
+"Clocks should pause during enjoyable activities to keep time emotionally accurate."
+]};
+
+const MIXERS={
+food:{
+stems:["Eating pizza crust first","Ordering dessert before dinner","Putting fries inside a sandwich","Drinking directly from the carton","Eating breakfast food after sunset","Saving the best bite for last","Choosing appetizers as the entire meal","Eating leftovers while standing at the refrigerator","Using a spoon for foods that usually require a fork","Ordering the same meal at every restaurant","Dipping food that already has sauce","Eating the garnish","Combining sweet and salty snacks","Cutting a round sandwich into squares","Serving breakfast without potatoes","Eating the crunchy part before the soft part"],
+endings:["is a sign of excellent judgment.","should be socially encouraged.","is only controversial because people fear efficiency.","is the most honest way to eat.","should be standard practice.","is better than pretending not to want it.","deserves far more respect.","should never require an explanation."]
+},
+social:{
+stems:["Leaving a party without a goodbye","Replying to a message with only a reaction","Arriving ten minutes late","Declining an invitation without an excuse","Wearing headphones without playing anything","Letting a phone call go to voicemail","Saying no to a group photo","Taking the last available seat","Ending small talk after one exchange","Correcting someone who mispronounces your name","Asking for separate checks immediately","Leaving a gathering before dessert","Ignoring an accidental group message","Saying exactly when you plan to leave","Refusing to sing Happy Birthday","Using an automatic door when a normal door is available"],
+endings:["is more polite than the alternative.","should not require an apology.","is healthy boundary-setting.","is an underrated public service.","should be considered normal behavior.","is only rude when performed without confidence.","saves everyone valuable time.","deserves protection under minor society law."]
+},
+tech:{
+stems:["Keeping every browser tab open","Turning off all phone notifications","Using speakerphone in an empty room","Sending three short texts instead of one long text","Watching videos at double speed","Never clearing an email inbox","Using the same wallpaper for years","Closing an app after every use","Letting the battery fall below five percent","Ignoring every software update for a week","Using a tablet as an oversized phone","Muting every group chat","Keeping old charging cables","Writing notes to yourself by text message","Using dark mode in daylight","Taking a screenshot instead of making a bookmark"],
+endings:["is a completely rational system.","should be the default setting.","reveals superior technical instincts.","is only chaotic from the outside.","makes modern life measurably better.","should never need defending.","is the correct response to bad design.","deserves an official shortcut button."]
+},
+home:{
+stems:["Leaving clean clothes in the laundry basket","Using one favorite mug for everything","Keeping manuals for appliances you no longer own","Storing things in the oven","Having a chair devoted entirely to clothes","Never folding towels","Keeping empty boxes because they are good boxes","Using the guest towels yourself","Vacuuming only the visible parts of a room","Owning more blankets than chairs","Leaving one cabinet permanently disorganized","Keeping condiments long after the date on the bottle","Using the dining table as a mail station","Putting off a tiny repair for several years","Sleeping with more than three pillows","Keeping a light on in an empty room"],
+endings:["is a legitimate household system.","is more efficient than organizing it.","should not be called clutter.","is evidence that the home is actually being used.","solves more problems than it creates.","is an acceptable design choice.","should be protected from unsolicited advice.","is the natural final stage of ownership."]
+},
+road:{
+stems:["Choosing the longer scenic route","Stopping for snacks within the first hour","Letting the passenger control navigation","Playing the same song twice in a row","Taking a photo at a state line","Stopping at a strange roadside attraction","Eating lunch at a gas station","Driving in comfortable silence","Taking a nap before the first fuel stop","Choosing a hotel for its breakfast","Changing lanes to avoid driving behind a truck","Refusing to ask for directions","Naming the car","Rating every rest-stop bathroom","Bringing a pillow from home","Packing more snacks than clothes"],
+endings:["is essential to a proper road trip.","should be decided before leaving the driveway.","is worth adding twenty minutes to the trip.","is a passenger privilege.","makes the journey better than the destination.","should count as travel planning.","is a sign of an experienced traveler.","requires no further justification."]
+},
+entertainment:{
+stems:["Rewatching a favorite show instead of starting a new one","Reading the ending of a book first","Skipping an episode that everyone says is bad","Watching a movie with subtitles on","Leaving a movie theater during the credits","Pausing a show to predict the plot","Choosing a comedy over an award winner","Watching a holiday movie out of season","Abandoning a series after one bad episode","Judging a book by its cover","Listening to an audiobook at high speed","Watching the sequel before the original","Choosing a movie based only on its runtime","Repeating a song until you dislike it","Reading reviews before seeing the movie","Falling asleep during a movie and claiming you saw it"],
+endings:["is the best way to enjoy a story.","should be accepted without judgment.","shows excellent audience instincts.","is better than following the intended order.","should count as active participation.","improves the original experience.","is a valid form of criticism.","deserves to become standard practice."]
+},
+language:{
+stems:["Using too many exclamation points","Starting a sentence with And","Turning a noun into a verb","Replying with a single period","Inventing a word everyone understands","Pronouncing a word the way it is spelled","Using air quotes during a phone call","Calling every remote control 'the clicker'","Using a nickname that is longer than the name","Saying 'long story short' before a long story","Using an emoji as punctuation","Refusing to use semicolons","Saying 'no offense' after the offensive part","Describing every small object as tiny","Calling every carbonated drink soda","Ending a text with an ellipsis"],
+endings:["improves the English language.","should be grammatically protected.","communicates more than proper wording ever could.","is correct if everyone understands it.","should not be treated as a mistake.","adds necessary emotional information.","is how language evolves under pressure.","deserves its own punctuation mark."]
+},
+nonsense:{
+stems:["Treating Tuesday as the real start of the week","Giving every room its own name","Rating clouds on a ten-point scale","Apologizing after bumping into furniture","Choosing a favorite stair","Distrusting any clock that ticks loudly","Considering an elevator a very small train","Waving at security cameras","Believing a hallway counts as a room","Giving household objects job titles","Treating midnight as both today and tomorrow","Refusing to trust revolving doors","Considering pockets tiny rooms","Judging buildings by their doorknobs","Thinking of umbrellas as portable ceilings","Treating a queue as a temporary neighborhood"],
+endings:["is logically defensible.","should be studied by serious people.","makes more sense the longer you consider it.","is the beginning of a better society.","is only absurd because nobody tried it sooner.","deserves a formal scientific category.","is a completely reasonable worldview.","would improve daily life immediately."]
+}};
+
+const docket=[];
+Object.keys(CURATED).forEach(category=>{
+  CURATED[category].forEach((text,index)=>docket.push({id:"c-"+category+"-"+index,category,text,curated:true}));
+});
+Object.keys(MIXERS).forEach(category=>{
+  MIXERS[category].stems.forEach((stem,stemIndex)=>{
+    MIXERS[category].endings.forEach((ending,endIndex)=>{
+      docket.push({id:"m-"+category+"-"+stemIndex+"-"+endIndex,category,text:stem+" "+ending,curated:false});
+    });
+  });
+});
+
+const $=id=>document.getElementById(id);
+const SEEN_KEY="pettyCourtSeenV1",LAW_KEY="pettyCourtCaseLawV1";
+const TIME_OPTIONS=[20,30,45,60];
+let mode="turnabout",secondsPerSide=30,currentCase=null,currentRuling="";
+let phase="setup",driverAgrees=true,hasSwapped=false,timerId=null,phaseEnd=0,phaseTotal=0;
+let wakeLock=null,audioCtx=null,clearArmed=false;
+let seen=new Set(readLocal(SEEN_KEY,[]));
+let caseLaw=readLocal(LAW_KEY,[]);
+
+function readLocal(key,fallback){try{const value=JSON.parse(localStorage.getItem(key));return value===null?fallback:value;}catch(e){return fallback;}}
+function writeLocal(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch(e){}}
+function formatTime(seconds){const minutes=(seconds/60)|0,remainder=seconds%60;return minutes+":"+String(remainder).padStart(2,"0");}
+function randomItem(items){return items[(Math.random()*items.length)|0];}
+function activeCategories(){return Array.from(document.querySelectorAll("#categoryGrid input:checked")).map(input=>input.value);}
+
+function buildCategories(){
+  const grid=$("categoryGrid");
+  Object.keys(CATEGORY_META).forEach(key=>{
+    const label=document.createElement("label");label.className="categoryToggle";
+    const input=document.createElement("input");input.type="checkbox";input.value=key;input.checked=true;
+    const span=document.createElement("span");span.textContent=CATEGORY_META[key].name;
+    label.append(input,span);grid.appendChild(label);
+  });
+  grid.addEventListener("change",event=>{
+    if(activeCategories().length===0){event.target.checked=true;}
+  });
+}
+
+function setMode(next){
+  mode=next;
+  document.querySelectorAll(".segment").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.mode===mode)));
+}
+$("modeControl").addEventListener("click",event=>{const button=event.target.closest(".segment");if(button)setMode(button.dataset.mode);});
+$("timeMinus").addEventListener("click",()=>{const index=TIME_OPTIONS.indexOf(secondsPerSide);secondsPerSide=TIME_OPTIONS[Math.max(0,index-1)];syncTime();});
+$("timePlus").addEventListener("click",()=>{const index=TIME_OPTIONS.indexOf(secondsPerSide);secondsPerSide=TIME_OPTIONS[Math.min(TIME_OPTIONS.length-1,index+1)];syncTime();});
+function syncTime(){$("timeValue").firstChild.nodeValue=formatTime(secondsPerSide);$("timeMinus").disabled=secondsPerSide<=20;$("timePlus").disabled=secondsPerSide>=60;}
+
+function drawCase(){
+  const categories=activeCategories();
+  let available=docket.filter(item=>categories.includes(item.category)&&!seen.has(item.id));
+  if(!available.length){
+    docket.filter(item=>categories.includes(item.category)).forEach(item=>seen.delete(item.id));
+    available=docket.filter(item=>categories.includes(item.category));
+  }
+  const curated=available.filter(item=>item.curated),generated=available.filter(item=>!item.curated);
+  currentCase=randomItem(curated.length&&Math.random()<.68?curated:generated.length?generated:curated);
+  seen.add(currentCase.id);writeLocal(SEEN_KEY,Array.from(seen));
+  return currentCase;
+}
+
+function newCase(){
+  stopTimer();releaseScreen();drawCase();phase="choose";currentRuling="";hasSwapped=false;
+  $("caseNumber").textContent="Case "+String(seen.size).padStart(3,"0")+" of "+docket.length;
+  $("categoryBadge").textContent=CATEGORY_META[currentCase.category].name;
+  $("takeText").textContent=currentCase.text;
+  $("choiceArea").hidden=false;$("argumentArea").hidden=true;$("rulingArea").hidden=true;
+  $("quoteInput").value="";$("saveStatus").textContent="";$("saveLaw").disabled=false;
+  document.querySelectorAll(".rulingBtn").forEach(button=>button.setAttribute("aria-pressed","false"));
+  const blind=mode==="blind";
+  $("choiceButtons").hidden=blind;$("assignSides").hidden=!blind;
+  $("choicePrompt").textContent=blind
+    ?"Neither side gets a choice. Read the take aloud, then reveal the assignments."
+    :"Driver: announce your honest position. Passenger, tap it below.";
+}
+
+function unlockAudio(){
+  if(!audioCtx){try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+  if(audioCtx&&audioCtx.state==="suspended")audioCtx.resume().catch(()=>{});
+}
+function beginWithStance(agrees){unlockAudio();driverAgrees=agrees;$("choiceArea").hidden=true;$("argumentArea").hidden=false;applySides();startArgument(false);}
+$("driverAgrees").addEventListener("click",()=>beginWithStance(true));
+$("driverDisagrees").addEventListener("click",()=>beginWithStance(false));
+$("assignSides").addEventListener("click",()=>beginWithStance(Math.random()<.5));
+
+function applySides(){
+  setCounsel("driver",driverAgrees);setCounsel("passenger",!driverAgrees);
+}
+function setCounsel(person,agrees){
+  const box=$(person+"Counsel"),side=$(person+"Side");
+  box.classList.toggle("agree",agrees);box.classList.toggle("disagree",!agrees);
+  side.textContent=agrees?"Agree":"Disagree";
+}
+function startArgument(swapped){
+  phase=swapped?"argue2":"argue1";
+  phaseTotal=mode==="opposing"?secondsPerSide*2:secondsPerSide;
+  phaseEnd=performance.now()+phaseTotal*1000;
+  $("timer").classList.remove("late");
+  $("gavelBtn").hidden=mode==="opposing"||swapped;
+  $("phaseText").textContent=mode==="opposing"
+    ?"Opposing counsel. Defend your positions until the court calls time."
+    :swapped?"Positions reversed. Defend what you just attacked.":"Opening arguments. Make the unreasonable sound inevitable.";
+  holdScreen();tick();timerId=setInterval(tick,200);
+}
+function tick(){
+  const left=Math.max(0,(phaseEnd-performance.now())/1000),shown=Math.ceil(left);
+  $("clock").textContent=formatTime(shown);
+  $("timer").querySelector(".left").style.strokeDashoffset=(1-left/phaseTotal).toFixed(4);
+  $("timer").classList.toggle("late",left<=8);
+  if(left<=0){stopTimer();if((mode==="turnabout"||mode==="blind")&&!hasSwapped)dropGavel();else showRuling();}
+}
+function dropGavel(){
+  if(hasSwapped)return;stopTimer();hasSwapped=true;driverAgrees=!driverAgrees;applySides();gavelSound();startArgument(true);
+}
+$("gavelBtn").addEventListener("click",dropGavel);
+$("closeArguments").addEventListener("click",showRuling);
+function showRuling(){
+  stopTimer();releaseScreen();phase="ruling";$("argumentArea").hidden=true;$("rulingArea").hidden=false;gavelSound();
+}
+function stopTimer(){if(timerId){clearInterval(timerId);timerId=null;}}
+
+document.querySelectorAll(".rulingBtn").forEach(button=>button.addEventListener("click",()=>{
+  currentRuling=button.dataset.ruling;
+  document.querySelectorAll(".rulingBtn").forEach(other=>other.setAttribute("aria-pressed",String(other===button)));
+}));
+$("saveLaw").addEventListener("click",()=>{
+  if(!currentCase)return;
+  caseLaw.unshift({id:Date.now(),caseId:currentCase.id,category:currentCase.category,take:currentCase.text,quote:$("quoteInput").value.trim(),ruling:currentRuling||"No ruling"});
+  caseLaw=caseLaw.slice(0,200);writeLocal(LAW_KEY,caseLaw);syncLawCount();
+  $("saveStatus").textContent="Entered into Case Law.";$("saveLaw").disabled=true;
+});
+$("nextCase").addEventListener("click",newCase);
+$("changeDocket").addEventListener("click",returnToSetup);
+function returnToSetup(){stopTimer();releaseScreen();$("courtScreen").classList.remove("on");$("setupScreen").classList.add("on");phase="setup";}
+$("startCourt").addEventListener("click",()=>{unlockAudio();$("setupScreen").classList.remove("on");$("courtScreen").classList.add("on");newCase();});
+
+function syncLawCount(){$("lawCount").textContent=caseLaw.length;}
+function renderCaseLaw(){
+  const query=$("lawSearch").value.trim().toLowerCase();
+  const matches=caseLaw.filter(item=>!query||(item.take+" "+item.quote+" "+item.ruling).toLowerCase().includes(query));
+  const list=$("lawList");list.replaceChildren();
+  if(!matches.length){const empty=document.createElement("p");empty.className="empty";empty.textContent=caseLaw.length?"No precedent matches that search.":"No Case Law yet. Save a case after the arguments to establish precedent.";list.appendChild(empty);return;}
+  matches.forEach(item=>{
+    const article=document.createElement("article");article.className="lawItem";
+    const meta=document.createElement("div");meta.className="lawMeta";
+    const category=document.createElement("span");category.textContent=CATEGORY_META[item.category].name;
+    const ruling=document.createElement("span");ruling.textContent=item.ruling;
+    const take=document.createElement("p");take.className="lawTake";take.textContent=item.take;
+    meta.append(category,ruling);article.append(meta,take);
+    if(item.quote){const quote=document.createElement("p");quote.className="lawQuote";quote.textContent='"'+item.quote+'"';article.appendChild(quote);}
+    const actions=document.createElement("div");actions.className="lawActions";
+    const remove=document.createElement("button");remove.className="btn quiet";remove.textContent="Remove";remove.dataset.remove=String(item.id);
+    actions.appendChild(remove);article.appendChild(actions);list.appendChild(article);
+  });
+}
+function openModal(modal,focusTarget){modal.hidden=false;focusTarget.focus();}
+function closeModal(modal,returnFocus){modal.hidden=true;returnFocus.focus();}
+$("caseLawBtn").addEventListener("click",()=>{clearArmed=false;$("clearLaw").textContent="Clear all Case Law";$("lawSearch").value="";renderCaseLaw();openModal($("lawModal"),$("lawSearch"));});
+$("closeLaw").addEventListener("click",()=>closeModal($("lawModal"),$("caseLawBtn")));
+$("doneLaw").addEventListener("click",()=>closeModal($("lawModal"),$("caseLawBtn")));
+$("lawSearch").addEventListener("input",renderCaseLaw);
+$("lawList").addEventListener("click",event=>{
+  const button=event.target.closest("[data-remove]");if(!button)return;
+  caseLaw=caseLaw.filter(item=>String(item.id)!==button.dataset.remove);writeLocal(LAW_KEY,caseLaw);syncLawCount();renderCaseLaw();
+  if(currentCase&&!caseLaw.some(item=>item.caseId===currentCase.id)){$("saveLaw").disabled=false;$("saveStatus").textContent="";}
+});
+$("clearLaw").addEventListener("click",()=>{
+  if(!caseLaw.length)return;
+  if(!clearArmed){clearArmed=true;$("clearLaw").textContent="Tap again to confirm";return;}
+  caseLaw=[];writeLocal(LAW_KEY,caseLaw);syncLawCount();renderCaseLaw();clearArmed=false;$("clearLaw").textContent="Clear all Case Law";
+});
+$("helpBtn").addEventListener("click",()=>openModal($("rulesModal"),$("closeRules")));
+$("closeRules").addEventListener("click",()=>closeModal($("rulesModal"),$("helpBtn")));
+[$("rulesModal"),$("lawModal")].forEach(modal=>modal.addEventListener("click",event=>{if(event.target===modal)closeModal(modal,modal===$("rulesModal")?$("helpBtn"):$("caseLawBtn"));}));
+document.addEventListener("keydown",event=>{
+  if(event.key!=="Escape")return;
+  if(!$("lawModal").hidden)closeModal($("lawModal"),$("caseLawBtn"));
+  else if(!$("rulesModal").hidden)closeModal($("rulesModal"),$("helpBtn"));
+});
+
+async function holdScreen(){try{if("wakeLock" in navigator)wakeLock=await navigator.wakeLock.request("screen");}catch(e){wakeLock=null;}}
+function releaseScreen(){if(wakeLock){wakeLock.release().catch(()=>{});wakeLock=null;}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&timerId)holdScreen();});
+function gavelSound(){
+  if(!audioCtx)return;
+  const now=audioCtx.currentTime,osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+  osc.type="triangle";osc.frequency.setValueAtTime(150,now);osc.frequency.exponentialRampToValueAtTime(58,now+.16);
+  gain.gain.setValueAtTime(.001,now);gain.gain.linearRampToValueAtTime(.34,now+.006);gain.gain.exponentialRampToValueAtTime(.001,now+.42);
+  osc.connect(gain);gain.connect(audioCtx.destination);osc.start(now);osc.stop(now+.45);
+  const ring=audioCtx.createOscillator(),ringGain=audioCtx.createGain();ring.type="sine";ring.frequency.value=420;
+  ringGain.gain.setValueAtTime(.12,now+.02);ringGain.gain.exponentialRampToValueAtTime(.001,now+.24);ring.connect(ringGain);ringGain.connect(audioCtx.destination);ring.start(now+.02);ring.stop(now+.26);
+}
+
+buildCategories();syncTime();syncLawCount();
+})();
+</script>
+</body>
+</html>

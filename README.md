@@ -57,13 +57,22 @@ A co-op road-trip pitch game. The passenger deals two actors, a strange movie ge
 - 200+ actors, 150+ genres, and 100 studio notes included
 - Best for 2+ players, especially long drives
 
+### [Petty Court](petty-court/petty-court.html)
+
+A passenger-led road-trip debate game about aggressively trivial matters. Pick a side, argue the opposite, and swap positions when the Gavel drops.
+
+- Three procedures: Turnabout, Opposing Counsel, and Blind Justice
+- 1,000+ offline hot takes across eight themed dockets
+- Save favorite rulings and quotes as local Case Law
+- Best for 2+ players, with the driver playing entirely by voice
+
 ## How to Use
 
 1. **Open** any game's HTML file in a web browser
 2. **Save** it to your home screen or bookmarks
 3. **Play** anytime, anywhere — no connection needed
 
-Everything runs entirely on your device. No cookies, no storage, no tracking, no analytics.
+Everything runs entirely on your device. No accounts, tracking, or analytics. Games that remember settings or favorites store them only in your browser.
 
 ---
 
