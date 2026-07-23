@@ -1,6 +1,6 @@
 {
-  "name": "Unplugged Together",
-  "short_name": "Unplugged",
+  "name": "Take Turns",
+  "short_name": "Take Turns",
   "description": "Offline multiplayer games for road trips, parties, and conversations.",
   "id": "./",
   "start_url": "./",
@@ -15,7 +15,7 @@
     {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
   ],
   "screenshots": [
-    {"src": "screenshots/launcher.jpg", "sizes": "1265x791", "type": "image/jpeg", "form_factor": "wide", "label": "Unplugged Together game launcher"},
-    {"src": "screenshots/launcher-mobile.jpg", "sizes": "375x812", "type": "image/jpeg", "form_factor": "narrow", "label": "Unplugged Together on a phone"}
+    {"src": "screenshots/launcher.jpg", "sizes": "1250x782", "type": "image/jpeg", "form_factor": "wide", "label": "Take Turns game launcher"},
+    {"src": "screenshots/launcher-mobile.jpg", "sizes": "360x780", "type": "image/jpeg", "form_factor": "narrow", "label": "Take Turns on a phone"}
   ]
 }

@@ -1,12 +1,12 @@
-# Unplugged Together
+# Take Turns
 
 Offline multiplayer games for face-to-face fun. No accounts, ads, tracking, or analytics.
 
 ## Play
 
-**[Open the game launcher](https://delgaudm.github.io/unplugged-together/)**
+**[Open the game launcher](https://taketurns.fun/)**
 
-[![Unplugged Together launcher](screenshots/launcher.jpg)](https://delgaudm.github.io/unplugged-together/)
+[![Take Turns launcher](screenshots/launcher.jpg)](https://taketurns.fun/)
 
 Choose a game and start playing. On a phone, use **Install App** or **Add to Home Screen** from the browser menu. Visit the launcher once while online and all nine games are cached for later use without a connection.
 
