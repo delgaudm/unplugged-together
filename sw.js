@@ -14,6 +14,7 @@ const ASSETS=[
   "./petty-court/petty-court.html",
   "./talk-amongst-yourselves/talk-amongst-yourselves.html",
   "./would-you-rather/would-you-rather.html",
+  "./name-the-list/name-the-list.html",
   "./screenshots/launcher.jpg",
   "./screenshots/launcher-mobile.jpg",
   "./screenshots/word-shaker.jpg",
@@ -23,7 +24,8 @@ const ASSETS=[
   "./screenshots/greenlight.jpg",
   "./screenshots/petty-court.jpg",
   "./screenshots/talk-amongst-yourselves.jpg",
-  "./screenshots/would-you-rather.jpg"
+  "./screenshots/would-you-rather.jpg",
+  "./screenshots/name-the-list.jpg"
 ];
 
 self.addEventListener("install",event=>{
